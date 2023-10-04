@@ -11,12 +11,13 @@
 #include<fstream>
 #include <chrono>
 #include <thread>
+#include <SFML/Audio.hpp>
 using namespace std;
 typedef struct {
     int loc_in_structure;//Место, где находиться в главном массиве структур
-    string drop[12];//Ячейки под предметы в судуке
-}InfoChestItem;//Структура котрая хранит информацию об сундуках
-extern vector<InfoChestItem> dropchest;//Массив котрый хранит информацию об сундуках
+    string drop[12];//Ячейки под предметы в сундуке
+}InfoChestItem;//Структура котрая хранит информацию о сундуках
+extern vector<InfoChestItem> dropchest;//Массив котрый хранит информацию о сундуках
 typedef struct {
     char name;//Имя структуры(дерево, камень и т.д.)
     double hp;//Прочность
@@ -24,8 +25,8 @@ typedef struct {
 }InfoStucture;//Главная структура которая хранит информацию про структуры мира
 typedef struct {
     int loc_in_structure;//Место, где находиться в главном массиве структур
-    double hp;//Время изчезновения
-    vector<string> tempdrop;//То, что хрнит в себе временный сундук
+    double hp;//Время исчезновения
+    vector<string> tempdrop;//То, что хранит в себе временный сундук
 }InfoTempItem;//Иформация про временный сундук
 typedef struct {
     int loc_in_structure;//Место, где находиться в главном массиве структур
@@ -39,13 +40,14 @@ extern vector<InfoTempItem> timedrop;//Временые сундуки
 vector<vector<int>> research_map;//Миникарта
 extern double timerespawne;//Переменная которая хранит врремя до респавна камня на чанках
 vector<vector<vector<vector<char>>>> world;//Динамический массив который хранит мир
-extern int line_of_sight;//Линия взгляда игрока (верх,низ,право,леов)
+extern int line_of_sight;//Линия взгляда игрока (верх,низ,право,лево)
 extern string inventory[20];//Инвентарь игрока
-extern vector<InfoStucture> structure;//Динамический массив который хранит информацию об всех структурах мира
+extern vector<InfoStucture> structure;//Динамический массив который хранит информацию о всех структурах мира
 extern double time_world;//Время в мире
 extern int day;//День
 extern void ClearLineScreen();
-int graphic = 1;//Переменная для настроек в главном меню
+int graphic = 1, setting_music = 1;//graphic - Переменная для настроек в главном меню | setting_music - настройка музыки(1 - вкл/2 - выкл)
+#pragma region File
 void OutInfoFile(const char* text, const char* text1, const char* text2, vector<vector<vector<vector<char>>>>& world, vector<InfoTempItem>& timedrop) {
     ifstream info(text); ifstream info1(text1); ifstream info2(text2);
     string text_file, num[2] = { "","" }, temp_num = "";
@@ -183,6 +185,17 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
     }
     cin >> g;*/
 }
+//OutInfoFile - вывод информации из файлов в переменные/массивы
+void ChekFile(const char* text, const char* text1, const char* text2, int sizefile[3]) {
+    fstream file(text); fstream file1(text1); fstream file2(text2);
+    file.seekg(0, std::ios::end);
+    file1.seekg(0, std::ios::end);
+    file2.seekg(0, std::ios::end);
+    sizefile[0] = file.tellg(); sizefile[1] = file1.tellg(); sizefile[2] = file2.tellg();
+    file.close(); file1.close(); file2.close();
+}
+//ChekFile - проверка файлов на пустоту
+#pragma endregion
 #pragma region World
 void WorldGeneration(vector<vector<vector<vector<char>>>>& world) {
     srand(time(0));
@@ -461,6 +474,7 @@ void WorldGeneration(vector<vector<vector<vector<char>>>>& world) {
         }
     }
 }
+//WorldGeneration - генерация мира
 void WordSize(vector<vector<vector<vector<char>>>>& world) {
     srand(time(0));
     int num = rand() % (6 - 4 + 1) + 4;
@@ -476,32 +490,42 @@ void WordSize(vector<vector<vector<vector<char>>>>& world) {
         }
     }
 }
+//WordSize - размернсоть мира(блок/куб/строка/столбец)
 #pragma endregion
-void ChekFile(const char* text, const char* text1, const char* text2, int sizefile[3]) {
-    fstream file(text); fstream file1(text1); fstream file2(text2);
-    file.seekg(0, std::ios::end);
-    file1.seekg(0, std::ios::end);
-    file2.seekg(0, std::ios::end);
-    sizefile[0] = file.tellg(); sizefile[1] = file1.tellg(); sizefile[2] = file2.tellg();
-    file.close(); file1.close(); file2.close();
-}
 int Creation_Launch() {
     srand(time(0));
+    #pragma region Music_Sound
+    sf::SoundBuffer ButtonBuff;
+    if (!ButtonBuff.loadFromFile("button.ogg")) {
+        return -1;
+    }
+    sf::Sound button;
+    button.setBuffer(ButtonBuff);
+
+    sf::Music music_menu;
+    if (!music_menu.openFromFile("music_menu.ogg")) {
+        return -1;
+    }
+    #pragma endregion
+    music_menu.play();
     int choice = 1, sizefile[3] = { 0,0,0 }, page = 5;//amount_save = 0,
     //choice - Переменная для выбора;sizefile - Хранит в себе размер файла, page - для страниц в меню
     string enter = "1";//enter - переменная для нажатия enter
+    #pragma region Chek_Choice/Selection_Choice
     do {
-        ClearLineScreen(); cout << "\tГлавное меню\nВыберете действия:\n[1] - Создать новый мир\n[2] - Продолжить игру\n[3] - Настройки\n[4] - Об игре\n";
+        ClearLineScreen(); cout << "\tWildall\nВыберете действия:\n[1] - Создать новый мир\n[2] - Продолжить игру\n[3] - Настройки\n[4] - Об игре\n";
         if (choice >= 0 && choice <= 4) { cout << "Ваш выбор: "; cin >> choice; }
         else if (choice < 1 || choice>4) { cout << "Неверный выбор!\nВведите ваш выбор снова: "; cin >> choice; }
         if (choice == 3) {
+            button.play();
             do {
                 do {
-                    ClearLineScreen(); cout << "\t\tНастройки\n[1] - Графика\n";
+                    ClearLineScreen(); cout << "\t\tНастройки\n[1] - Графика\n[2] - Музыка\n";
                     if (choice == 5) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода): "; cin >> choice; }
-                    else { cout << "Выш выбор(0 для выхожа): "; cin >> choice; }
-                    if (choice > 1 || choice < 0)choice = 5;
-                } while (choice > 1 && choice < 0);
+                    else { cout << "Выш выбор(0 для выхода): "; cin >> choice; }
+                    if (choice > 2 || choice < 0)choice = 5;
+                } while (choice > 2 && choice < 0);
+                button.play();
                 if (choice == 1) {
                     do {
                         ClearLineScreen(); cout << "\t\tГрафика\n";
@@ -509,15 +533,33 @@ int Creation_Launch() {
                         else if (graphic == 2) { cout << "[1] - Низкая графика\n[2] - Супер низкая графика   <---- Ваш выбор\n"; }
                         else cout << "[1] - Низкая графика\n[2] - Супер низкая графика\n";
                         choice = graphic;
-                        if (graphic == 3) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода): "; cin >> graphic; }
+                        if (graphic < 0 || graphic > 2) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода): "; cin >> graphic; }
                         else { cout << "Выш выбор(0 для выхода): "; cin >> graphic; }
                         if (graphic < 0 || graphic>2)choice = 3;
                         if (graphic == 0) { graphic = choice; choice = 0; }
+                        button.play();
                     } while (choice != 0);
+                }else if (choice == 2) {
+                    int start_setting_music = setting_music;
+                    do {
+                        ClearLineScreen(); cout << "\t\tМузыка\n";
+                        if (setting_music == 1) { cout << "[1] - Вкл. музыка   <---- Ваш выбор\n[2] - Выл. музыка\n"; }
+                        else if (setting_music == 2) { cout << "[1] - Вкл. музыка\n[2] - Выл. музыка   <---- Ваш выбор\n"; }
+                        else cout << "[1] - Вкл. музыка\n[2] - Выл. музыка\n";
+                        choice = setting_music;
+                        if (choice == 3) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода/изменения настроек): "; cin >> setting_music; }
+                        else { cout << "Выш выбор(0 для выхода/изменения настроек): "; cin >> setting_music; }
+                        if (setting_music < 0 || setting_music>2)choice = 3;
+                        if (setting_music == 0) { setting_music = choice; choice = 0; }
+                        button.play();
+                    } while (choice != 0);
+                    if (start_setting_music == 1 && setting_music == 2)music_menu.stop();
+                    else if(start_setting_music == 2 && setting_music == 1)music_menu.play();
                 }
             } while (choice != 0);
         }
         if (choice == 4) {
+            button.play();
             choice = 1;
             do {
                 ClearLineScreen();
@@ -552,10 +594,13 @@ int Creation_Launch() {
                 else if (choice == 2) {
                     if (page < 0 || page>2)page = 4;
                 }
+                button.play();
             } while (page != 0);
             choice = 0;
         }
+        else button.play();
     } while (choice < 1 || choice>4);
+    #pragma endregion
     ChekFile("WorldParameter.txt", "WorldStructure.txt", "PlayerInfo.txt", sizefile);
     if (choice == 2) {
         if (sizefile[0] != 0 && sizefile[1] != 0 && sizefile[2] != 0) {
@@ -577,6 +622,7 @@ int Creation_Launch() {
                 else { cout << "\nВаш выбор: "; cin >> choice; }
                 if (choice < 1 || choice>2) { choice = 3; ClearLineScreen(); }
             } while (choice < 1 || choice>2);
+            button.play();
         }
     }
     if (choice == 1) {
@@ -587,6 +633,7 @@ int Creation_Launch() {
                 else { cout << "Ваш выбор: "; cin >> choice; }
                 if (choice < 1 || choice>2) { choice = 3; ClearLineScreen(); }
             } while (choice < 1 || choice>2);
+            button.play();
         }
         if (choice != 2) {
             ofstream file("WorldParameter.txt"); ofstream file1("WorldStructure.txt"); ofstream file2("PlayerInfo.txt");
@@ -606,5 +653,6 @@ int Creation_Launch() {
             if (graphic == 2) { ClearLineScreen(); cout << "Вы умерли! Графика стала настолько плохой, что перестала отрисовывать мир!:)"; }
         }
     }
+    if(setting_music == 1)music_menu.stop();
     return 0;
 }

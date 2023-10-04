@@ -13,14 +13,14 @@ using namespace std;
 typedef struct {
     int loc_in_structure;//Место, где находиться в главном массиве структур
     string drop[12];//Ячейки под предметы в судуке
-}InfoChestItem;//Структура котрая хранит информацию об сундуках
-extern vector<InfoChestItem> dropchest;//Массив котрый хранит информацию об сундуках
+}InfoChestItem;//Структура котрая хранит информацию о сундуках
+extern vector<InfoChestItem> dropchest;//Массив котрый хранит информацию о сундуках
 typedef struct {
     char name;//Имя структуры(дерево, камень и т.д.)
     double hp;//Прочность
     int location[4];//Координаты места в мире
-}InfoStucture;//Информацию об всех структурах мира
-extern vector<InfoStucture> structure;//Динамический массив который хранит информацию об всех структурах мира
+}InfoStucture;//Информацию о всех структурах мира
+extern vector<InfoStucture> structure;//Динамический массив который хранит информацию о всех структурах мира
 typedef struct {
     int loc_in_structure;//Место, где находиться в главном массиве структур
     double hp;//Время роста
@@ -64,6 +64,7 @@ void InputInfoWorldFile(const char* text, vector<vector<vector<vector<char>>>>& 
     }
     info.close();
 }
+//InputInfoWorldFile - запись информации все что свзано с игроком в файл
 void InputInfoPlayerFile(const char* text) {
     ofstream info(text);
     info << "Линия взгляда:" << line_of_sight << endl;
@@ -92,6 +93,7 @@ void InputInfoPlayerFile(const char* text) {
     info << "Craft_aftermath:" << craft_aftermath;
     info.close();
 }
+//InputInfoPlayerFile - запись информации мира в файл
 void InputInfoStructureFile(const char* text) {
     ofstream info(text);
     info << "Размерностьs:" << structure.size() << endl << "Размерностьt:" << timedrop.size() << endl << "Размерностьc:" << dropchest.size() << endl << "Размерностьd:" << tree.size() << endl << "Timerespawne:" << timerespawne << endl;
@@ -140,6 +142,7 @@ void InputInfoStructureFile(const char* text) {
     }
     info.close();
 }
+//InputInfoStructureFile - запись информации все что свзано с структурами мира в файл
 int InputInfo() {
     InputInfoWorldFile("WorldParameter.txt", world);
     InputInfoPlayerFile("PlayerInfo.txt");

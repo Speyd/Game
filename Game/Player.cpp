@@ -10,6 +10,7 @@
 #include<fstream>
 #include <chrono>
 #include <thread>
+#include <SFML/Audio.hpp>
 using namespace std;
 #pragma region StructWorld
 
@@ -45,11 +46,12 @@ typedef struct {
 }InfoStucture;//Информацию об всех структурах мира
 vector<InfoStucture> structure; //Динамический массив который хранит информацию об всех структурах мира
 #pragma endregion
-extern void ClearLineScreen();//Отчиска Экрана
+extern int setting_music;
+extern void ClearLineScreen();//Очистка Экрана
 extern vector<vector<int>> research_map;//Миникарта
 extern vector<vector<vector<vector<char>>>> world;//Динамический массив который хранит мир
 double timerespawne, save_time_delay = 0, time_world = 390;
-//timerespawne - Переменная которая хранит врремя до респавна камня на чанках
+//timerespawne - Переменная которая хранит время до респавна камня на чанках
 //save_time_delay - Переменная которая хранит в себе время на колдаун действий
 //time_world - Переменная которая хранит время мира(день-ночь)
 char choiceswap;// перменная которая отвечает за выбор в смене-переносе ячеек в инвентаре-сундуке-временном сундуке-крафте
@@ -80,8 +82,8 @@ void DeleteLineOfSight(int line_of_sight, int loc[4]) {
         world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = ' ';
     }
 }
-//DeleteLineOfSight - Удаление стрелочкек направления игрока(показывае ткуда смотрит игрок)
-void DeleteToolInventory() {
+//DeleteLineOfSight - Удаление стрелочкек направления игрока(показывает куда смотрит игрок)
+void DeleteToolInventory(sf::Sound& break_tool) {
     string temp_num[2] = { "","" };
     string g;
     for (int i = inventory[hand].find(' ') + 1; i != inventory[hand].find('n'); i++) {
@@ -91,7 +93,7 @@ void DeleteToolInventory() {
    /* cout << temp_num[1] << endl;
     cin >> g;*/
 
-    if (stoi(temp_num[1]) == 1) { error = 16; inventory[hand] = ""; }
+    if (stoi(temp_num[1]) == 1) { error = 16; break_tool.play(); inventory[hand] = ""; }
     else inventory[hand] = "x1 " + temp_num[0] + "(" + std::to_string(stoi(temp_num[1]) - 1) + "n)";
 }
 //DeleteToolInventory - Удаление инструментов с инвентаря
@@ -181,7 +183,7 @@ void ChekPlayer(vector<vector<vector<vector<char>>>>& world, int loc[4]) {
     }
 }
 //ChekPlayer - Проверка где находиться игрок на карте
-void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop) {
+void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop,sf::Sound& take) {
     srand(time(0));
     bool index_switch = false;//переменная которая отвечает за считывания drop выше 0 индекса
     for (int j = 0; j != drop.amount.size(); j++) {
@@ -279,7 +281,11 @@ void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<
             }
         }
     }
-    else if (empty_cell == 0 && drop.amount[0] != 0 || empty_cell == 0 && drop.amount[1] != 0) {
+    for (int i = 0, amount = 0; i != drop.amount.size(); i++) {
+        if (drop.amount[i] == 0)amount++;
+        if(i == drop.amount.size()-1 && amount>0)take.play();
+    }
+    if (empty_cell == 0 && drop.amount[0] != 0 || drop.amount.size() > 1 && empty_cell == 0 && drop.amount[1] != 0) {
         timedrop.resize(timedrop.size() + 1);
         structure.resize(structure.size() + 1);
         structure[structure.size() - 1].name = 'T';
@@ -337,16 +343,52 @@ void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<
     //if (drop.amount[0] != 0 || drop.amount[1] != 0)InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop);
 }
 //InputDropInventory - Доавление в инвентарь добытых ресурсов
-void Menu(char& choice) {
+void Menu(char& choice, sf::Music& day_sound, sf::Music& night_sound) {
+    if (setting_music == 1) {
+        if (time_world >= 390 && time_world < 1110 && day_sound.getStatus() == 2) day_sound.pause();
+        else if (time_world < 390 && time_world >= 0 && night_sound.getStatus() == 2 || time_world >= 1110 && night_sound.getStatus() == 2)night_sound.pause();
+    }
     do {
         ClearLineScreen();
-        cout << "\t\t\tМеню\n[1] - Продолжить игру\n[2] - Сохранить\n[3] - Сохранить и выйти\n";
+        cout << "\t\t\tМеню\n[1] - Продолжить игру\n[2] - Настройки\n[3] - Сохранить\n[4] - Сохранить и выйти\n";
         if (error == 0) { cout << "Ваш выбор: "; cin >> choice; }
-        if (choice == '1' || choice == '2' || choice == '3')error = 0;
+        if (choice == '1' || choice == '2' || choice == '3' || choice == '4')error = 0;
         else { cout << "Нету такого выбора\nВведите ваш выбор снова: "; cin >> choice; error = 7; }
+        if (choice == '2') {
+            char choice_setting = '1';
+            do {
+                ClearLineScreen(); cout << "\t\tНастройки\n[1] - Музыка\n";
+                if (choice_setting != '1') { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода): "; cin >> choice_setting; }
+                else { cout << "Выш выбор(0 для выхода): "; cin >> choice_setting; }
+                if (choice_setting == '1')break;
+            } while (true);
+            int temp_setting_music = setting_music,choice_sound;
+            if (choice_setting == '1'){
+                do {
+                    ClearLineScreen(); cout << "\t\tМузыка\n";
+                    if (setting_music == 1) { cout << "[1] - Вкл. музыка   <---- Ваш выбор\n[2] - Выл. музыка\n"; }
+                    else if (setting_music == 2) { cout << "[1] - Вкл. музыка\n[2] - Выл. музыка   <---- Ваш выбор\n"; }
+                    else cout << "[1] - Вкл. музыка\n[2] - Выл. музыка\n";
+                    if (setting_music < 0 || setting_music>2) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода/изменения настроек): "; cin >> setting_music; }
+                    else { cout << "Выш выбор(0 для выхода/изменения настроек): "; cin >> setting_music; }
+                    if (setting_music == 0) break;
+                    choice_sound = setting_music;
+                } while (true);
+                setting_music = choice_sound;
+                if (setting_music == 0 && temp_setting_music == 1) {
+                    if (time_world >= 390 && time_world < 1110 && day_sound.getStatus() == 0) day_sound.stop();
+                    else if (time_world < 390 && time_world >= 0 && night_sound.getStatus() == 0 || time_world >= 1110 && night_sound.getStatus() == 0)night_sound.stop();
+                }
+            }
+        }
     } while (error != 0);
     ClearLineScreen();
-    if (choice == '2' || choice == '3') InputInfo(); 
+    if (choice == '2' || choice == '3') InputInfo();
+    if (setting_music == 1) {
+        if (time_world >= 390 && time_world < 1110 && day_sound.getStatus() != 2) day_sound.play();
+        else if (time_world < 390 && time_world >= 0 && night_sound.getStatus() != 2 || time_world >= 1110 && night_sound.getStatus() != 2)night_sound.play();
+
+    }
 }
 //Меню
 void ProductionDelay(double timeDelay) {
@@ -360,7 +402,8 @@ void ProductionDelay(double timeDelay) {
         if (save_time_delay <= 0)check_fatigue = false;
     }
 }
-void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, int chek_input[2], int& invent_info, vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop) {
+//ProductionDelay - Усталость при добывании/ломании структур
+void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, int chek_input[2], int& invent_info, vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop,sf::Sound& break_struct, sf::Sound& break_tool) {
     srand(time(0));
     int amount_structmass = 0;
     string temp_num = "",f;
@@ -376,7 +419,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     if (inventory[hand].find("топор") != string::npos) {
                         if (inventory[hand].find('W') != string::npos)structure[0].hp = 3;
                         else if (inventory[hand].find('S') != string::npos)structure[0].hp = 2.5;
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[0].hp = 3.5;
                 }
@@ -384,7 +427,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     structure[0].name = 'S';
                     if (inventory[hand].find('W') != string::npos)structure[0].hp = 5.5;
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
-                    DeleteToolInventory();
+                    DeleteToolInventory(break_tool);
                 }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
                 structure[0].location[2] = loc[2] - 1; structure[0].location[3] = loc[3];
@@ -421,17 +464,18 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                                      if (structure[i].name != 'S')structure[i].hp -= 1.5;
                                      else structure[i].hp -= 1;
                                  }
-                                DeleteToolInventory();
+                                DeleteToolInventory(break_tool);
                              }
                              else structure[i].hp -= 0.5;
                         }
                         if (structure[i].hp <= 0) {
+                            save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
                             else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if(rand()%(100-1+1)+1 <=20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
-                            else if (structure[i].name == 'C') { drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
-                            else if (structure[i].name == 'W') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
-                            else if (structure[i].name == 'i') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
+                            else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
+                            else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
+                            else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
                             world[loc[0]][loc[1]][loc[2] - 1][loc[3]] = ' ';
                             for (int j = 0; j != timedrop.size(); j++) {
                                 if (structure.size() - 1 == timedrop[j].loc_in_structure) {
@@ -468,7 +512,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             if (structure[structure.size() - 1].name != 'S')structure[structure.size() - 1].hp -= 1.5;
                             else structure[structure.size() - 1].hp -= 1;
                         }
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
@@ -490,7 +534,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     if (inventory[hand].find('-') + 1 == inventory[hand].find("топор")) {
                         if (inventory[hand].find('W') != string::npos)structure[0].hp = 3;
                         else if (inventory[hand].find('S') != string::npos)structure[0].hp = 2.5;
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[0].hp = 3.5;
                 }
@@ -498,7 +542,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     structure[0].name = 'S';
                     if (inventory[hand].find('W') != string::npos)structure[0].hp = 5.5;
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
-                    DeleteToolInventory();
+                    DeleteToolInventory(break_tool);
                 }
                 //else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'y') { structure[0].name = 'y'; structure[0].hp = 1; }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
@@ -536,17 +580,18 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                                     if (structure[i].name != 'S')structure[i].hp -= 1.5;
                                     else structure[i].hp -= 1;
                                 }
-                                DeleteToolInventory();
+                                DeleteToolInventory(break_tool);
                             }
                             else structure[i].hp -= 0.5;
                         }
                         if (structure[i].hp <= 0) {
+                            save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
                             else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if(rand()%(100-1+1)+1 <=20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
-                            else if (structure[i].name == 'C') { drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
-                            else if (structure[i].name == 'W') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
-                            else if (structure[i].name == 'i') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
+                            else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
+                            else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
+                            else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
                             world[loc[0]][loc[1]][loc[2] + 1][loc[3]] = ' ';
                             for (int j = 0; j != timedrop.size(); j++) {
                                 if (structure.size() - 1 == timedrop[j].loc_in_structure) {
@@ -580,7 +625,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             if (structure[structure.size() - 1].name != 'S')structure[structure.size() - 1].hp -= 1.5;
                             else structure[structure.size() - 1].hp -= 1;
                         }
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
@@ -602,7 +647,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     if (inventory[hand].find("топор") != string::npos) {
                         if (inventory[hand].find('W') != string::npos)structure[0].hp = 3;
                         else if (inventory[hand].find('S') != string::npos)structure[0].hp = 2.5;
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[0].hp = 3.5;
                 }
@@ -610,7 +655,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     structure[0].name = 'S';
                     if (inventory[hand].find('W') != string::npos)structure[0].hp = 5.5;
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
-                    DeleteToolInventory();
+                    DeleteToolInventory(break_tool);
                 }
                 //else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'y') { structure[0].name = 'y'; structure[0].hp = 0.5; }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
@@ -648,17 +693,18 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                                     if (structure[i].name != 'S')structure[i].hp -= 1.5;
                                     else structure[i].hp -= 1;
                                 }
-                                DeleteToolInventory();
+                                DeleteToolInventory(break_tool);
                             }
                             else structure[i].hp -= 0.5;
                         }
                         if (structure[i].hp <= 0) {
+                            save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
                             else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if (rand() % (100 - 1 + 1) + 1 <= 20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
-                            else if (structure[i].name == 'C') { drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
-                            else if (structure[i].name == 'W') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
-                            else if (structure[i].name == 'i') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
+                            else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
+                            else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
+                            else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
                             world[loc[0]][loc[1]][loc[2]][loc[3] + 1] = ' ';
                             for (int j = 0; j != timedrop.size(); j++) {
                                 if (structure.size() - 1 == timedrop[j].loc_in_structure) {
@@ -692,7 +738,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             if (structure[structure.size() - 1].name != 'S')structure[structure.size() - 1].hp -= 1.5;
                             else structure[structure.size() - 1].hp -= 1;
                         }
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
@@ -714,7 +760,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     if (inventory[hand].find("топор") != string::npos) {
                         if (inventory[hand].find('W') != string::npos)structure[0].hp = 3;
                         else if (inventory[hand].find('S') != string::npos)structure[0].hp = 2.5;
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[0].hp = 3.5;
                 }
@@ -722,7 +768,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     structure[0].name = 'S';
                     if (inventory[hand].find('W') != string::npos)structure[0].hp = 5.5;
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
-                    DeleteToolInventory();
+                    DeleteToolInventory(break_tool);
                 }
                 //else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'y') { structure[0].name = 'y'; structure[0].hp = 0.5; }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
@@ -760,17 +806,18 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                                     if (structure[i].name != 'S')structure[i].hp -= 1.5;
                                     else structure[i].hp -= 1;
                                 }
-                                DeleteToolInventory();
+                                DeleteToolInventory(break_tool);
                             }
                             else structure[i].hp -= 0.5;
                         }
                         if (structure[i].hp <= 0) {
+                            save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
                             else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if (rand() % (100 - 1 + 1) + 1 <= 20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
-                            else if (structure[i].name == 'C') { drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
-                            else if (structure[i].name == 'W') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
-                            else if (structure[i].name == 'i') { drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
+                            else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
+                            else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
+                            else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
                             world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = ' ';
                             for (int j = 0; j != timedrop.size(); j++) {
                                 if (structure.size() - 1 == timedrop[j].loc_in_structure) {
@@ -804,7 +851,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             if (structure[structure.size() - 1].name != 'S')structure[structure.size() - 1].hp -= 1.5;
                             else structure[structure.size() - 1].hp -= 1;
                         }
-                        DeleteToolInventory();
+                        DeleteToolInventory(break_tool);
                     }
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
@@ -863,7 +910,7 @@ void Map(vector<vector<vector<vector<char>>>>& world, int loc[4]) {
 //Map - Мини карта
 #pragma endregion
 #pragma region MovePlayer
-void StepW(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight) {
+void StepW(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight,sf::Sound& record_map) {
     line_of_sight = 1;
     if (loc[2] - 1 != 0) {
         if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == ' ') { swap(world[loc[0]][loc[1]][loc[2] - 1][loc[3]], world[loc[0]][loc[1]][loc[2]][loc[3]]); loc[2] -= 1; }
@@ -875,12 +922,16 @@ void StepW(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of
             swap(world[loc[0] - 1][loc[1]][world[loc[0] - 1][loc[1]].size() - 2][loc[3]], world[loc[0]][loc[1]][loc[2]][loc[3]]);
             loc[2] = world[loc[0] - 1][loc[1]].size() - 2;
             loc[0] -= 1;
-            if (research_map[loc[0]][loc[1]] == false)research_map[loc[0]][loc[1]] = true;
+            if (research_map[loc[0]][loc[1]] == false) { 
+                record_map.play();
+                error = 21;
+                research_map[loc[0]][loc[1]] = true;
+            }
         }//research_map[loc[0]][loc[1]]=true;
     }
 }
 //StepW - Шаг вперед
-void StepS(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight) {
+void StepS(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, sf::Sound& record_map) {
     line_of_sight = 2;
     if (loc[2] + 1 != world[loc[0]][loc[1]].size() - 1) {
         if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == ' ') { swap(world[loc[0]][loc[1]][loc[2] + 1][loc[3]], world[loc[0]][loc[1]][loc[2]][loc[3]]); loc[2] += 1; }
@@ -891,12 +942,16 @@ void StepS(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of
         else {
             swap(world[loc[0] + 1][loc[1]][1][loc[3]], world[loc[0]][loc[1]][loc[2]][loc[3]]);
             loc[0] += 1; loc[2] = 1;
-            if (research_map[loc[0]][loc[1]] == false)research_map[loc[0]][loc[1]] = true;
+            if (research_map[loc[0]][loc[1]] == false) {
+                record_map.play();
+                error = 21;
+                research_map[loc[0]][loc[1]] = true;
+            }
         }
     }
 }
 //StepS - Шаг назад
-void StepD(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight) {
+void StepD(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, sf::Sound& record_map) {
     line_of_sight = 3;
     if (loc[3] + 1 != world[loc[0]][loc[1]][loc[2]].size() - 1) {
         if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == ' ') { swap(world[loc[0]][loc[1]][loc[2]][loc[3] + 1], world[loc[0]][loc[1]][loc[2]][loc[3]]); loc[3] += 1; }
@@ -907,12 +962,16 @@ void StepD(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of
         else {
             swap(world[loc[0]][loc[1] + 1][loc[2]][1], world[loc[0]][loc[1]][loc[2]][loc[3]]);
             loc[1] += 1; loc[3] = 1;
-            if (research_map[loc[0]][loc[1]] == false)research_map[loc[0]][loc[1]] = true;
+            if (research_map[loc[0]][loc[1]] == false) {
+                record_map.play();
+                error = 21;
+                research_map[loc[0]][loc[1]] = true;
+            }
         }//research_map[loc[0]][loc[1]]=true;
     }
 }
 //StepD - Шаг вправо 
-void StepA(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight) {
+void StepA(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, sf::Sound& record_map) {
     line_of_sight = 4;
     if (loc[3] - 1 != 0) {
         if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == ' ') { swap(world[loc[0]][loc[1]][loc[2]][loc[3] - 1], world[loc[0]][loc[1]][loc[2]][loc[3]]); loc[3] -= 1; }
@@ -923,7 +982,11 @@ void StepA(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of
         else {
             swap(world[loc[0]][loc[1] - 1][loc[2]][world[loc[0]][loc[1]][loc[2]].size() - 2], world[loc[0]][loc[1]][loc[2]][loc[3]]);
             loc[3] = world[loc[0]][loc[1]][loc[2]].size() - 2; loc[1] -= 1;
-            if (research_map[loc[0]][loc[1]] == false)research_map[loc[0]][loc[1]] = true;
+            if (research_map[loc[0]][loc[1]] == false) {
+                record_map.play();
+                error = 21;
+                research_map[loc[0]][loc[1]] = true;
+            }
         }
     }
 }
@@ -941,7 +1004,7 @@ void InputLineOfSight(int line_of_sight,int loc[4]) {
         world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = '<';
     }
 }
-//Вывод стрелочки направления игрока(показывае ткуда смотрит игрок)
+//Вывод стрелочки направления игрока(показывает куда смотрит игрок)
 void AmountTorch(int loc[4]) {
     for (int i = 0; i != world[loc[0]][loc[1]].size(); i++) {
         for (int l = 0; l != world[loc[0]][loc[1]][i].size(); l++) {
@@ -954,9 +1017,19 @@ void AmountTorch(int loc[4]) {
         }
     }
 }
-//AmountTorch - Количесвто факелов в чанке
-void InputWorldConsole(vector<vector<vector<vector<char>>>>& world, int loc[4], int& invent_info, int line_of_sight) {
+//AmountTorch - Количество факелов в чанке
+void InputWorldConsole(vector<vector<vector<vector<char>>>>& world, int loc[4], int& invent_info, int line_of_sight,sf::Sound& take, sf::Music& day_sound,sf::Music& night_sound) {
     if (time_world >= 1440) { time_world = 0; day++; }
+    if (setting_music == 1) {
+        if (time_world >= 390 && time_world < 1110 && day_sound.getStatus() == 0) {
+            day_sound.play();
+            night_sound.stop();
+        }
+        else if (time_world < 390 && time_world >= 0 && night_sound.getStatus() == 0 || time_world >= 1110 && night_sound.getStatus() == 0) {
+            night_sound.play();
+            day_sound.stop();
+        }
+    }
     int cell_output = 0,num_time_line,num_time_column;//Эта переменная отвечает за поиск ячеек котрые игрок может выдеть
     if (time_world >= 1080 && time_world < 1140 || time_world >= 270 && time_world < 390 || time_world >= 1140 && time_world < 1440 || time_world >= 0 && time_world < 270) {
         AmountTorch(loc);
@@ -1044,21 +1117,22 @@ void InputWorldConsole(vector<vector<vector<vector<char>>>>& world, int loc[4], 
         else if (i == 1 && error == 17)cout << "    Вы не можете рубить эту структуру киркой!";
         else if (i == 1 && error == 18)cout << "    Вы не можете разбить эту структуру топором!";
         else if (i == 1 && error == 19)cout << "    Вы не можете разбить эту структуру рукой!";
+        else if (i == 1 && error == 21)cout << "    На карте зделана заметка!";
         else if (drop.name == 'Y') {
             if (i == 1)cout << "    Добыто x" << drop.amount[0] << " дерева!";
-            if (i == 2) { cout << "    Добыто x" << drop.amount[1] << " саженца!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop); }
+            if (i == 2) { cout << "    Добыто x" << drop.amount[1] << " саженца!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop, take); }
         }
-        else if (i == 1 && drop.name == 'y') { cout << "    Добыто x" << drop.amount[1] << " саженца!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop); }
+        else if (i == 1 && drop.name == 'y') { cout << "    Добыто x" << drop.amount[1] << " саженца!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop, take); }
         else if (drop.name == 'S') {
             if (i == 1)cout << "    Добыто x" << drop.amount[0] << " камня!";
             else if (i == 2) {
                 if (drop.amount.size() > 1 && drop.amount[1] != 0) cout << "    Добыто x" << drop.amount[1] << " угля!";
-                InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop);
+                InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop, take);
             }
         }
-        else if (i == 1 && drop.name == 'С') { cout << "    Добыто x1 сундук!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop); }
-        else if (i == 1 && drop.name == 'W') { cout << "    Добыто x1 верстак!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop); }
-        else if (i == 1 && drop.name == 'i') { cout << "    Добыто x1 факел!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop); }
+        else if (i == 1 && drop.name == 'С') { cout << "    Добыто x1 сундук!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop, take); }
+        else if (i == 1 && drop.name == 'W') { cout << "    Добыто x1 верстак!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop, take); }
+        else if (i == 1 && drop.name == 'i') { cout << "    Добыто x1 факел!"; InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop, take); }
         if (i == 2 && error == 16)cout << "    Инструмент сломалься!";
         if (i == 3 && error == 20) {
             cout.precision(1);
@@ -1487,7 +1561,7 @@ void CraftAftermathDelete() {
         }
     }
 }
-//CraftAftermathDelete - Функция которая добавляет скрафченый предмет в инвентарь
+//CraftAftermathDelete - Функция которая добавляет скрафченные предмет в инвентарь
 bool craft_turn = false;//Переменная котрая дает возможность скрафтить предмет 
 void ItemCraftAdd() {
     empty_cell = 0; string temp_text[4] = { "","","","" };
@@ -1642,13 +1716,17 @@ void CraftingRecipes(char choicecraft) {
             min = 0;
             craft_turn = true;
             for (int i = 0; i != index; i++) {
-                if (stoi(temp_num[min]) > stoi(temp_num[i]))min = i;
+                if (temp_num[i].empty() == false) {
+                    if (stoi(temp_num[min]) > stoi(temp_num[i]))min = i;
+                }
             }
             craft_aftermath_input = "x" + temp_num[min] + " верстак";
             if (choicecraft == 'c' || choicecraft == 'C') {
                 for (int i = 0; i != index; i++) {
-                    if (stoi(temp_num[i]) > stoi(temp_num[min]))craft[i] = "x" + std::to_string(stoi(temp_num[i]) - stoi(temp_num[min])) + " " + temp_text[0];
-                    else if (stoi(temp_num[i]) == stoi(temp_num[min]))craft[i] = "";
+                    if (temp_num[i].empty() == false) {
+                        if (stoi(temp_num[i]) > stoi(temp_num[min]))craft[i] = "x" + std::to_string(stoi(temp_num[i]) - stoi(temp_num[min])) + " " + temp_text[0];
+                        else if (stoi(temp_num[i]) == stoi(temp_num[min]))craft[num[i]] = "";
+                    }
                 }
                 craft_aftermath = "x" + temp_num[min] + " верстак";
                 craft_aftermath_input = "";
@@ -1851,8 +1929,8 @@ void CraftingRecipes(char choicecraft) {
     }
     else { craft_aftermath_input = ""; craft_turn = false; }
 }
-//CraftingRecipes - Функция котррая хранит рецеты крафта
-void Craft() {
+//CraftingRecipes - Функция котррая хранит рецепты крафта
+void Craft(sf::Sound& craft_sound) {
     static char choice; static char choicecraft; static int item[2]; static string temp_text[4] = { "","","","" };
     do {
         do {
@@ -1864,8 +1942,8 @@ void Craft() {
             if (error_input == 0 || error_input >= 18 && error_input <= 20) { cout << "Ваш выбор: "; cin >> choicecraft; }
             else { cout << "Введите ваш выбор снова: "; cin >> choicecraft; }
             if (choicecraft == '1' || choicecraft == '2' || choicecraft == 'c' || choicecraft == 'C' || choicecraft == 'e' || choicecraft == 'E') {
-                if (craft_turn == false && choicecraft == 'c' || choicecraft == 'C')error_input = 1;
-                else if (craft_turn == true && choicecraft == 'c' || choicecraft == 'C')error_input = 0;
+                if (craft_turn == false && choicecraft == 'c' || craft_turn == false && choicecraft == 'C')error_input = 1;
+                else if (craft_turn == true && choicecraft == 'c' || craft_turn == true && choicecraft == 'C')error_input = 0;
                 else error_input = 0;
             }
             else error_input = 1;
@@ -2044,7 +2122,7 @@ void Craft() {
                     }
                 }
                 else if (inventory[item[0]].empty() == false && craft[item[1]].empty() || inventory[item[0]].empty() && craft[item[1]].empty() == false || inventory[item[0]].empty() && craft[item[1]].empty()) {
-                    if (temp_text[0].find('-') + 1 == temp_text[0].find("топор") || temp_text[0].find('-') + 1 == temp_text[0].find("кирка") || temp_text[1].find('-') + 1 == temp_text[1].find("топор") || temp_text[1].find('-') + 1 == temp_text[1].find("кирка"))swap(craft[item[1]], inventory[item[0]]);
+                    if (temp_text[0].find("топор") != string :: npos || temp_text[0].find("кирка") != string::npos || temp_text[1].find("топор") != string::npos || temp_text[1].find("кирка") != string::npos)swap(craft[item[1]], inventory[item[0]]);
                     else if (inventory[item[0]].empty() == false && choice == '1' || inventory[item[0]].empty() == false && choice == '2') {
                         if (choice == '1') {
                             if (stoi(temp_text[2]) == 1)inventory[item[0]] = "";
@@ -2072,6 +2150,7 @@ void Craft() {
             }
         }
         else {
+            craft_sound.play();
             CraftingRecipes(choicecraft);
             CraftAftermathDelete();
             choicecraft = ' ';
@@ -2084,8 +2163,8 @@ void Craft() {
 //Крафт предметов
 #pragma endregion
 #pragma region Inventory-Inventory_Actions
-void InventoryPlayer(int& error_input, int item[2], int line_of_sight, int loc[4]);//Инввентарь игрока
-void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop) {
+void InventoryPlayer(int& error_input, int item[2], int line_of_sight, int loc[4], sf::Sound& craft_sound, sf::Sound& throw_away);//Инвентарь игрока
+void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop, sf::Sound& throw_away) {
     ClearLineScreen();
     InputConsoleInvent();
     static int index_tempdrop, cell, check_empty = 0;
@@ -2141,7 +2220,7 @@ void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& stru
                 else error_input = 10;
             }
             else if (line_of_sight == 2) {
-                if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == ' ' || world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'v') {
+                if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == ' ' || world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'v') {
                     structure.resize(structure.size() + 1); timedrop.resize(timedrop.size() + 1);
                     world[loc[0]][loc[1]][loc[2] + 1][loc[3]] = 'T'; structure[structure.size() - 1].name = 'T';
                     structure[structure.size() - 1].location[0] = loc[0]; structure[structure.size() - 1].location[1] = loc[1];
@@ -2161,7 +2240,7 @@ void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& stru
                 else error_input = 10;
             }
             else if (line_of_sight == 3) {
-                if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == ' ' || world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == '>') {
+                if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == ' ' || world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == '>') {
                     structure.resize(structure.size() + 1); timedrop.resize(timedrop.size() + 1);
                     world[loc[0]][loc[1]][loc[2]][loc[3] + 1] = 'T'; structure[structure.size() - 1].name = 'T';
                     structure[structure.size() - 1].location[0] = loc[0]; structure[structure.size() - 1].location[1] = loc[1];
@@ -2181,7 +2260,7 @@ void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& stru
                 else error_input = 10;
             }
             else if (line_of_sight == 4) {
-                if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == ' ' || world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == '<') {
+                if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == ' ' || world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == '<') {
                     structure.resize(structure.size() + 1); timedrop.resize(timedrop.size() + 1);
                     world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = 'T'; structure[structure.size() - 1].name = 'T';
                     structure[structure.size() - 1].location[0] = loc[0]; structure[structure.size() - 1].location[1] = loc[1];
@@ -2293,6 +2372,7 @@ void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& stru
             }
         }
         ClearLineScreen();
+        if (error_input == 0)throw_away.play();
     }
     temp_text[0] = ""; temp_text[1] = ""; temp_text[2] = ""; temp_text[3] = ""; choice = ' ';
 }
@@ -2990,9 +3070,9 @@ void SwapObject(int line_of_sight, int loc[4]) {
     choiceswap = ' ';
 }
 //SwapObject - Меню перемещания предметов
-void ToInteract(int loc[4]);//Взаимодейстиве с структурами
+//void ToInteract(int loc[4], sf::Sound& open_chest, sf::Sound& close_chest, sf::Sound& craft_sound, sf::Sound& throw_away);//Взаимодейстиве с структурами
 void CraftTable();//Вызов верстака или крафт в инвентаре
-void InventoryPlayer(int& error_input, int item[2], int line_of_sight, int loc[4]) {
+void InventoryPlayer(int& error_input, int item[2], int line_of_sight, int loc[4],sf::Sound& craft_sound, sf::Sound& throw_away){
     ClearLineScreen();
     static char choice = ' ';
     do {
@@ -3028,11 +3108,11 @@ void InventoryPlayer(int& error_input, int item[2], int line_of_sight, int loc[4
             }
         } while (error_input != 0);
         if (choice == '1')SwapObject(line_of_sight, loc);
-        else if (choice == '2' && input_chest == 0)EjectionOfObjects(line_of_sight, loc, structure, timedrop);
+        else if (choice == '2' && input_chest == 0)EjectionOfObjects(line_of_sight, loc, structure, timedrop, throw_away);
         else if (choice == '2' && input_chest == 1 || choice == '2' && input_chest == 2 || choice == '2' && input_chest == 3)PutInHand(line_of_sight, loc);
         else if (choice == '3' && input_chest == 0)PutInHand(line_of_sight, loc);
         else if (choice == 'c' || choice == 'C') {
-            if (craft_aftermath == "") { CraftTable(); Craft(); }
+            if (craft_aftermath == "") { CraftTable(); Craft(craft_sound); }
             else error_input = 21;
         }
         else if (choice == 'e' || choice == 'E')input_chest = 0;
@@ -3044,7 +3124,7 @@ void InventoryPlayer(int& error_input, int item[2], int line_of_sight, int loc[4
 //InventoryPlayer - Инввентарь игрока
 #pragma endregion
 #pragma region Structure
-void GiveItemTimeDrop(int loc[4]) {
+void GiveItemTimeDrop(int loc[4], sf::Sound& craft_sound, sf::Sound& throw_away) {
     ClearLineScreen();
     for (int i = 0; i != timedrop.size(); i++) {
         if (structure[timedrop[i].loc_in_structure].location[0] == loc[0] && structure[timedrop[i].loc_in_structure].location[1] == loc[1]) {
@@ -3064,7 +3144,7 @@ void GiveItemTimeDrop(int loc[4]) {
     }
     input_chest = 1;
     while (input_chest != 0) {
-        InventoryPlayer(error_input, item, line_of_sight, loc);
+        InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away);
     }
 }
 //Добавление предметов в временный сундук
@@ -3098,13 +3178,15 @@ void FindIndexChest(int loc[4]) {
     }
 }
 //FindIndexChest - Поиск индекса сундука в массиве structure
-void Chest(int loc[4]) {
+void Chest(int loc[4],sf::Sound& open_chest, sf::Sound& close_chest, sf::Sound& craft_sound, sf::Sound& throw_away) {
     ClearLineScreen();
     FindIndexChest(loc);
     input_chest = 2;
+    open_chest.play();
     while (input_chest != 0) {
-        InventoryPlayer(error_input, item, line_of_sight, loc);
+        InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away);
     }
+    close_chest.play();
 }
 //Вызова сундука
 void CheckEmptyCraft() {
@@ -3121,46 +3203,46 @@ void CheckEmptyCraft() {
     if (craft_aftermath != "")error = 13;
 }
 //CheckEmptyCraft - Проверка на пустоту крафта(это зделано для того, если при крафте в версатке/крафта в инвентаре, остались предметы в ячейках крафта(остаються если нету для них места в инвентаре) и вы не сможете пользоваться крафтом пока не освобоите ячейки в инветаре
-void ToInteract(int loc[4]) {
+void ToInteract(int loc[4], sf::Sound& open_chest, sf::Sound& close_chest, sf::Sound& craft_sound, sf::Sound& throw_away) {
     if (line_of_sight == 1) {
-        if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'T')GiveItemTimeDrop(loc);
-        else if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'C')Chest(loc);
+        if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'T')GiveItemTimeDrop(loc, craft_sound, throw_away);
+        else if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'C')Chest(loc, open_chest, close_chest, craft_sound, throw_away);
         else if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'W') {
             CheckEmptyCraft();
-            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc); }
+            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away); }
         }
         else error = 2;
     }
     else if (line_of_sight == 2) {
-        if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'T')GiveItemTimeDrop(loc);
-        else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'C')Chest(loc);
+        if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'T')GiveItemTimeDrop(loc, craft_sound, throw_away);
+        else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'C')Chest(loc, open_chest, close_chest, craft_sound, throw_away);
         else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'W') {
             CheckEmptyCraft();
-            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc); }
+            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away); }
         }
         else error = 2;
     }
     else if (line_of_sight == 3) {
-        if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'T')GiveItemTimeDrop(loc);
-        else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'C')Chest(loc);
+        if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'T')GiveItemTimeDrop(loc, craft_sound, throw_away);
+        else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'C')Chest(loc, open_chest, close_chest, craft_sound, throw_away);
         else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'W') {
             CheckEmptyCraft();
-            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc); }
+            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away); }
         }
         else error = 2;
     }
     else if (line_of_sight == 4) {
-        if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'T')GiveItemTimeDrop(loc);
-        else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'C')Chest(loc);
+        if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'T')GiveItemTimeDrop(loc, craft_sound, throw_away);
+        else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'C')Chest(loc, open_chest, close_chest, craft_sound, throw_away);
         else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'W') {
             CheckEmptyCraft();
-            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc); }
+            if (error != 13) { input_chest = 3; CraftTable(); InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away); }
         }
         else error = 2;
     }
 }
 //ToInterac - Определение структуры с которым взаемодействует игрок
-void PlantPut(int loc[4], string check_text[2]) {
+void PlantPut(int loc[4], string check_text[2],sf::Sound& planting, sf::Sound& put_structure1, sf::Sound& put_structure2) {
     srand(time(0));
     if (line_of_sight == 1) {
         if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == ' ' || world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == '^') {
@@ -3175,13 +3257,18 @@ void PlantPut(int loc[4], string check_text[2]) {
                 dropchest.resize(dropchest.size() + 1);
                 dropchest[dropchest.size() - 1].loc_in_structure = structure.size() - 1;
                 world[loc[0]][loc[1]][loc[2] - 1][loc[3]] = 'C';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "верстак") {
                 structure[structure.size() - 1].name = 'W';
                 structure[structure.size() - 1].hp = 4;
                 world[loc[0]][loc[1]][loc[2] - 1][loc[3]] = 'W';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "саженца") {
+                planting.play();
                 tree.resize(tree.size() + 1);
                 tree[tree.size() - 1].loc_in_structure = structure.size() - 1;
                 structure[structure.size() - 1].name = 'y';
@@ -3193,6 +3280,8 @@ void PlantPut(int loc[4], string check_text[2]) {
                 structure[structure.size() - 1].name = 'i';
                 structure[structure.size() - 1].hp = 0.5;
                 world[loc[0]][loc[1]][loc[2] - 1][loc[3]] = 'i';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
         }
         else error = 10;
@@ -3210,13 +3299,18 @@ void PlantPut(int loc[4], string check_text[2]) {
                 dropchest.resize(dropchest.size() + 1);
                 dropchest[dropchest.size() - 1].loc_in_structure = structure.size() - 1;
                 world[loc[0]][loc[1]][loc[2] + 1][loc[3]] = 'C';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "верстак") {
                 structure[structure.size() - 1].name = 'W';
                 structure[structure.size() - 1].hp = 4;
                 world[loc[0]][loc[1]][loc[2] + 1][loc[3]] = 'W';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "саженца") {
+                planting.play();
                 tree.resize(tree.size() + 1);
                 tree[tree.size() - 1].loc_in_structure = structure.size() - 1;
                 structure[structure.size() - 1].name = 'y';
@@ -3228,6 +3322,8 @@ void PlantPut(int loc[4], string check_text[2]) {
                 structure[structure.size() - 1].name = 'i';
                 structure[structure.size() - 1].hp = 0.5;
                 world[loc[0]][loc[1]][loc[2] + 1][loc[3]] = 'i';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
         }
         else error = 10;
@@ -3245,13 +3341,18 @@ void PlantPut(int loc[4], string check_text[2]) {
                 dropchest.resize(dropchest.size() + 1);
                 dropchest[dropchest.size() - 1].loc_in_structure = structure.size() - 1;
                 world[loc[0]][loc[1]][loc[2]][loc[3] + 1] = 'C';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "верстак") {
                 structure[structure.size() - 1].name = 'W';
                 structure[structure.size() - 1].hp = 4;
                 world[loc[0]][loc[1]][loc[2]][loc[3] + 1] = 'W';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "саженца") {
+                planting.play();
                 tree.resize(tree.size() + 1);
                 tree[tree.size() - 1].loc_in_structure = structure.size() - 1;
                 structure[structure.size() - 1].name = 'y';
@@ -3263,6 +3364,8 @@ void PlantPut(int loc[4], string check_text[2]) {
                 structure[structure.size() - 1].name = 'i';
                 structure[structure.size() - 1].hp = 0.5;
                 world[loc[0]][loc[1]][loc[2]][loc[3] + 1] = 'i';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
         }
         else error = 10;
@@ -3280,13 +3383,18 @@ void PlantPut(int loc[4], string check_text[2]) {
                 dropchest.resize(dropchest.size() + 1);
                 dropchest[dropchest.size() - 1].loc_in_structure = structure.size() - 1;
                 world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = 'C';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "верстак") {
                 structure[structure.size() - 1].name = 'W';
                 structure[structure.size() - 1].hp = 4;
                 world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = 'W';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
             else if (check_text[0] == "саженца") {
+                planting.play();
                 tree.resize(tree.size() + 1);
                 tree[tree.size() - 1].loc_in_structure = structure.size() - 1;
                 structure[structure.size() - 1].name = 'y';
@@ -3298,6 +3406,8 @@ void PlantPut(int loc[4], string check_text[2]) {
                 structure[structure.size() - 1].name = 'i';
                 structure[structure.size() - 1].hp = 0.5;
                 world[loc[0]][loc[1]][loc[2]][loc[3] - 1] = 'i';
+                if (rand() % (2 - 1 + 1) + 1 == 1)put_structure1.play();
+                else put_structure2.play();
             }
         }
         else error = 10;
@@ -3445,7 +3555,7 @@ void RespawnStone() {
         }
     }
 }
-//RespawnStone - Проверяет достиг ли счетсчик временни определенного значения для респавна камня
+//RespawnStone - Проверяет достиг ли счетчик времени определенного значения для респавна камня
 void TreeGrowth(double timeStructure) {
     int num = 1;
     if (tree.size() != 0) {
@@ -3485,9 +3595,39 @@ void TreeGrowth(double timeStructure) {
         else num = 0;
     }
 }
-//TreeGrowth - Растение саженцов
+//TreeGrowth - Рост саженцев
 #pragma endregion
-void CheckTrueChoice(char& choice, int chek_input[3],int loc[4], string check_text[2],int& invent_info) {
+#pragma region PlaySound
+void ReproductionSoundTree(sf::Sound& breaking_wood_1, sf::Sound& breaking_wood_2, sf::Sound& breaking_wood_3, sf::Sound& breaking_wood_4, sf::Sound& breaking_wood_5, sf::Sound& hit_hand_1, sf::Sound& hit_hand_2, sf::Sound& hit_hand_3, sf::Sound& hit_hand_4) {
+    //hit_hand_1.play();
+    if (inventory[hand].find("топор") != string::npos) {
+        int num = rand() % (5 - 1 + 1) + 1;
+        if (num == 1) breaking_wood_1.play();
+        else if (num == 2) breaking_wood_2.play();
+        else if (num == 3) breaking_wood_3.play();
+        else if (num == 4) breaking_wood_4.play();
+        else if (num == 5) breaking_wood_5.play();
+    }
+    else {
+        int num = rand() % (4 - 1 + 1) + 1;
+        if (num == 1)hit_hand_1.play();
+        else if (num == 2) hit_hand_2.play();
+        else if (num == 3) hit_hand_3.play();
+        else if (num == 4) hit_hand_4.play();
+    }
+}
+//ReproductionSoundTre - звук ударов по дереву
+void ReproductionSoundMove(sf::Sound& move_1, sf::Sound& move_2, sf::Sound& move_3, sf::Sound& move_4, sf::Sound& move_5) {
+    int num = rand() % (5 - 1 + 1) + 1;
+    if (num == 1)move_1.play();
+    else if (num == 2)move_2.play();
+    else if (num == 3)move_3.play();
+    else if (num == 4)move_4.play();
+    else if (num == 5)move_5.play();
+}
+//ReproductionSoundMove - звук ходьбы
+#pragma endregion
+void CheckTrueChoice(char& choice, int chek_input[3],int loc[4], string check_text[2],int& invent_info,sf::Sound& take,sf::Music& day_sound, sf::Music& night_sound) {
     do {
         cout << endl << "[w] - Вперед | [s] - Назад | [d] - В право | [a] - В лево";
         if (inventory[hand].empty() == false) {
@@ -3517,29 +3657,250 @@ void CheckTrueChoice(char& choice, int chek_input[3],int loc[4], string check_te
             error = 7;
             ClearLineScreen();
             InputLineOfSight(line_of_sight, loc);
-            InputWorldConsole(world, loc, invent_info, line_of_sight);
+            InputWorldConsole(world, loc, invent_info, line_of_sight,take, day_sound, night_sound);
         }
     } while (error != 0);
 }
+//CheckTrueChoice - код из функции Player
 int Player() {
-    string g;
-    char choice = '4';//choice - Выбор действий
+    #pragma region Sounds
+    #pragma region Chop
+    sf::SoundBuffer Breaking_Wood_Buff1;
+    if (!Breaking_Wood_Buff1.loadFromFile("breaking_wood_1.ogg")) {
+        return -1;
+    }
+    sf::Sound breaking_wood_1;
+    breaking_wood_1.setBuffer(Breaking_Wood_Buff1);
+
+    sf::SoundBuffer Breaking_Wood_Buff2;
+    if (!Breaking_Wood_Buff2.loadFromFile("breaking_wood_2.ogg")) {
+        return -1;
+    }
+    sf::Sound breaking_wood_2;
+    breaking_wood_2.setBuffer(Breaking_Wood_Buff2);
+
+    sf::SoundBuffer Breaking_Wood_Buff3;
+    if (!Breaking_Wood_Buff1.loadFromFile("breaking_wood_3.ogg")) {
+        return -1;
+    }
+    sf::Sound breaking_wood_3;
+    breaking_wood_3.setBuffer(Breaking_Wood_Buff3);
+
+    sf::SoundBuffer Breaking_Wood_Buff4;
+    if (!Breaking_Wood_Buff4.loadFromFile("breaking_wood_4.ogg")) {
+        return -1;
+    }
+    sf::Sound breaking_wood_4;
+    breaking_wood_4.setBuffer(Breaking_Wood_Buff4);
+
+    sf::SoundBuffer Breaking_Wood_Buff5;
+    if (!Breaking_Wood_Buff5.loadFromFile("breaking_wood_5.ogg")) {
+        return -1;
+    }
+    sf::Sound breaking_wood_5;
+    breaking_wood_5.setBuffer(Breaking_Wood_Buff5);
+        #pragma endregion
+    #pragma region Hand
+    sf::SoundBuffer Hit_HandBuff1;
+    if (!Hit_HandBuff1.loadFromFile("hit_hand_1.ogg")) {
+        return -1;
+    }
+    sf::Sound hit_hand_1;
+    hit_hand_1.setBuffer(Hit_HandBuff1);
+
+    sf::SoundBuffer Hit_HandBuff2;
+    if (!Hit_HandBuff2.loadFromFile("hit_hand_2.ogg")) {
+        return -1;
+    }
+    sf::Sound hit_hand_2;
+    hit_hand_2.setBuffer(Hit_HandBuff2);
+
+    sf::SoundBuffer Hit_HandBuff3;
+    if (!Hit_HandBuff3.loadFromFile("hit_hand_3.ogg")) {
+        return -1;
+    }
+    sf::Sound hit_hand_3;
+    hit_hand_3.setBuffer(Hit_HandBuff3);
+
+    sf::SoundBuffer Hit_HandBuff4;
+    if (!Hit_HandBuff4.loadFromFile("hit_hand_4.ogg")) {
+        return -1;
+    }
+    sf::Sound hit_hand_4;
+    hit_hand_4.setBuffer(Hit_HandBuff4);
+    #pragma endregion
+    #pragma region Planting
+    sf::SoundBuffer PlantingBuff;
+    if (!PlantingBuff.loadFromFile("planting.ogg")) {
+        return -1;
+    }
+    sf::Sound planting;
+    planting.setBuffer(PlantingBuff);
+    #pragma endregion
+    #pragma region Chest
+    sf::SoundBuffer Open_ChestBuff;
+    if (!Open_ChestBuff.loadFromFile("open_chest.ogg")) {
+        return -1;
+    }
+    sf::Sound open_chest;
+    open_chest.setBuffer(Open_ChestBuff);
+
+    sf::SoundBuffer Close_ChestBuff;
+    if (!Close_ChestBuff.loadFromFile("close_chest.ogg")) {
+        return -1;
+    }
+    sf::Sound close_chest;
+    close_chest.setBuffer(Close_ChestBuff);
+    #pragma endregion
+    #pragma region Move
+    sf::SoundBuffer MoveBuff1;
+    if (!MoveBuff1.loadFromFile("move_1.ogg")) {
+        return -1;
+    }
+    sf::Sound move_1;
+    move_1.setBuffer(MoveBuff1);
+
+    sf::SoundBuffer MoveBuff2;
+    if (!MoveBuff2.loadFromFile("move_2.ogg")) {
+        return -1;
+    }
+    sf::Sound move_2;
+    move_2.setBuffer(MoveBuff2);
+
+    sf::SoundBuffer MoveBuff3;
+    if (!MoveBuff3.loadFromFile("move_3.ogg")) {
+        return -1;
+    }
+    sf::Sound move_3;
+    move_3.setBuffer(MoveBuff3);
+
+    sf::SoundBuffer MoveBuff4;
+    if (!MoveBuff4.loadFromFile("move_4.ogg")) {
+        return -1;
+    }
+    sf::Sound move_4;
+    move_4.setBuffer(MoveBuff4);
+
+    sf::SoundBuffer MoveBuff5;
+    if (!MoveBuff5.loadFromFile("move_5.ogg")) {
+        return -1;
+    }
+    sf::Sound move_5;
+    move_5.setBuffer(MoveBuff5);
+    #pragma endregion
+    #pragma region Map
+    sf::SoundBuffer Record_MapBuff;
+    if (!Record_MapBuff.loadFromFile("record_map.ogg")) {
+        return -1;
+    }
+    sf::Sound record_map;
+    record_map.setBuffer(Record_MapBuff);
+
+    sf::SoundBuffer Paper_OpenBuff;
+    if (!Paper_OpenBuff.loadFromFile("paper_open.ogg")) {
+        return -1;
+    }
+    sf::Sound paper_open;
+    paper_open.setBuffer(Paper_OpenBuff);
+    #pragma endregion
+    #pragma region Take_ThrAw_Item
+    sf::SoundBuffer TakeBuff;
+    if (!TakeBuff.loadFromFile("take.ogg")) {
+        return -1;
+    }
+    sf::Sound take;
+    take.setBuffer(TakeBuff);
+
+    sf::SoundBuffer Throw_AwayBuff;
+    if (!Throw_AwayBuff.loadFromFile("throw_away.ogg")) {
+        return -1;
+    }
+    sf::Sound throw_away;
+    throw_away.setBuffer(Throw_AwayBuff);
+    #pragma endregion
+    #pragma region Break_Struct
+    sf::SoundBuffer Break_StructBuff;
+    if (!Break_StructBuff.loadFromFile("break_struct.ogg")) {
+        return -1;
+    }
+    sf::Sound break_struct;
+    break_struct.setBuffer(Break_StructBuff);
+    #pragma endregion
+    #pragma region Pickaxe
+    sf::SoundBuffer PickaxeBuff1;
+    if (!PickaxeBuff1.loadFromFile("pickaxe1.ogg")) {
+        return -1;
+    }
+    sf::Sound pickaxe1;
+    pickaxe1.setBuffer(PickaxeBuff1);
+
+    sf::SoundBuffer PickaxeBuff2;
+    if (!PickaxeBuff2.loadFromFile("pickaxe2.ogg")) {
+        return -1;
+    }
+    sf::Sound pickaxe2;
+    pickaxe2.setBuffer(PickaxeBuff2);
+    #pragma endregion
+    #pragma region CraftSound
+    sf::SoundBuffer CraftBuff;
+    if (!CraftBuff.loadFromFile("craft_sound.ogg")) {
+        return -1;
+    }
+    sf::Sound craft_sound;
+    craft_sound.setBuffer(CraftBuff);
+    #pragma endregion
+    #pragma region Put_Structure
+    sf::SoundBuffer Put_StructureBuff1;
+    if (!Put_StructureBuff1.loadFromFile("put_structure1.ogg")) {
+        return -1;
+    }
+    sf::Sound put_structure1;
+    put_structure1.setBuffer(Put_StructureBuff1);
+
+    sf::SoundBuffer Put_StructureBuff2;
+    if (!Put_StructureBuff2.loadFromFile("put_structure2.ogg")) {
+        return -1;
+    }
+    sf::Sound put_structure2;
+    put_structure2.setBuffer(Put_StructureBuff2);
+    #pragma endregion
+    #pragma region Break_Tool
+    sf::SoundBuffer Break_ToolBuff;
+    if (!Break_ToolBuff.loadFromFile("break_tool.ogg")) {
+        return -1;
+    }
+    sf::Sound break_tool;
+    break_tool.setBuffer(Break_ToolBuff);
+    #pragma endregion
+    #pragma region Day_Night
+    sf::Music day_sound;
+    if (!day_sound.openFromFile("day_sound.ogg")) {
+        return -1;
+    }
+
+    sf::Music night_sound;
+    if (!night_sound.openFromFile("night_sound.ogg")) {
+        return -1;
+    }
+    #pragma endregion
+
+    #pragma endregion
+    char choice = '5';//choice - Выбор действий
     int loc[4] = {}, chek_input[4] = { 0,0,0,0 }, invent_info = 0;
-    //loc - Координаты игрока в мире| chek_input - проверка на то или инное дейсвтие(Например, если игрок хочет поставить что-то, но у него нету в руке что можна поставить, то в массив занесеться число 1 в определенный индекс свойственный разным ситуациям)
-    //
+    //loc - Координаты игрока в мире| chek_input - проверка на то или иное дейсвтие(Например, если игрок хочет поставить что-то, но у него нет в руке что можна поставить, то в массив занесеться число 1 в определенный индекс свойственный разным ситуациям)
     string check_text[2] = { "","" };
     double timePlayer = 0, timeStructure = 0, timeDelay = 0, timeWorld = 0;
     static bool time_tracking = false;
     ChekPlayer(world, loc);
-    while (choice != '3') {
+    while (choice != '4') {
         auto startPlayer = chrono::steady_clock::now();
         auto startStructure = chrono::steady_clock::now();
         auto startDelay = chrono::steady_clock::now();
         auto startWorld = chrono::steady_clock::now();
         ClearLineScreen();
         InputLineOfSight(line_of_sight, loc);//
-        InputWorldConsole(world, loc, invent_info, line_of_sight);//
-        CheckTrueChoice(choice, chek_input, loc, check_text, invent_info);
+        InputWorldConsole(world, loc, invent_info, line_of_sight,take, day_sound, night_sound);//
+        CheckTrueChoice(choice, chek_input, loc, check_text, invent_info,take, day_sound, night_sound);
         if (choice == '0') {
             auto endPlayer = chrono::steady_clock::now();
             auto endStructure = chrono::steady_clock::now();
@@ -3557,36 +3918,37 @@ int Player() {
             timeWorld = elapsedWorld.count(); time_world += timeWorld;
             DeleteTimeDrop(timePlayer);
             RespawnStone(); TreeGrowth(timeStructure);
-            Menu(choice);
+            Menu(choice,day_sound,night_sound);
             time_tracking = true;
             auto startStructure = chrono::steady_clock::now();
             auto startWorld = chrono::steady_clock::now();
         }
-        else if (choice == 'w' || choice == 'W') { DeleteLineOfSight(line_of_sight, loc); StepW(world, loc, line_of_sight); }
-        else if (choice == 's' || choice == 'S') { DeleteLineOfSight(line_of_sight, loc); StepS(world, loc, line_of_sight); }
-        else if (choice == 'd' || choice == 'D') { DeleteLineOfSight(line_of_sight, loc); StepD(world, loc, line_of_sight); }
-        else if (choice == 'a' || choice == 'A') { DeleteLineOfSight(line_of_sight, loc); StepA(world, loc, line_of_sight); }
+        else if (choice == 'w' || choice == 'W') { ReproductionSoundMove(move_1, move_2, move_3, move_4, move_5); DeleteLineOfSight(line_of_sight, loc); StepW(world, loc, line_of_sight, record_map); }
+        else if (choice == 's' || choice == 'S') { ReproductionSoundMove(move_1, move_2, move_3, move_4, move_5); DeleteLineOfSight(line_of_sight, loc); StepS(world, loc, line_of_sight, record_map); }
+        else if (choice == 'd' || choice == 'D') { ReproductionSoundMove(move_1, move_2, move_3, move_4, move_5); DeleteLineOfSight(line_of_sight, loc); StepD(world, loc, line_of_sight, record_map); }
+        else if (choice == 'a' || choice == 'A') { ReproductionSoundMove(move_1, move_2, move_3, move_4, move_5); DeleteLineOfSight(line_of_sight, loc); StepA(world, loc, line_of_sight, record_map); }
         else if (choice == 'p' || choice == 'P') {
-            if (chek_input[3] == 1) { chek_input[3] = 0; PlantPut(loc, check_text); }
+            if (chek_input[3] == 1) { chek_input[3] = 0; PlantPut(loc, check_text,planting,put_structure1, put_structure2); }
             else error = 9;
         }
         else if (choice == 'e' || choice == 'E') {
-            if (chek_input[2] == 1) { chek_input[2] = 0; ToInteract(loc); }
+            if (chek_input[2] == 1) { chek_input[2] = 0; ToInteract(loc, open_chest, close_chest, craft_sound, throw_away); }
             else error = 8;
         }
         else if (choice == 'c' || choice == 'C') {
             if (inventory[hand].find('-') + 1 == inventory[hand].find("кирка"))error = 17;
             else {
-                if (chek_input[0] == 1) { 
+                if (chek_input[0] == 1) {
                     auto endDelay = chrono::steady_clock::now();
                     chrono::duration<double> elapsedSDelay = endDelay - startDelay;
                     timeDelay = elapsedSDelay.count();
                     ProductionDelay(timeDelay);
                     if (check_fatigue == false) {
+                        ReproductionSoundTree(breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4);
                         chek_input[1] = 0;
                         ProductionDelay(timeDelay);
                         check_fatigue = true;
-                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop);
+                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop, break_struct, break_tool);
                         chek_input[0] = 0;
                     }
                     else error = 20;
@@ -3607,10 +3969,12 @@ int Player() {
                     timeDelay = elapsedSDelay.count();
                     ProductionDelay(timeDelay);
                     if (check_fatigue == false) {
+                        if (rand() % (2 - 1 + 1) + 1 == 1)pickaxe1.play();
+                        else pickaxe2.play();
                         chek_input[0] = 0;
                         ProductionDelay(timeDelay);
                         check_fatigue = true;
-                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop);
+                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop, break_struct, break_tool);
                         chek_input[1] = 0;
                     }
                     else error = 20;
@@ -3618,13 +3982,13 @@ int Player() {
                 else error = 6;
             }
         }
-        else if (choice == 'm' || choice == 'M')Map(world, loc);
+        else if (choice == 'm' || choice == 'M') { paper_open.play(); Map(world, loc); }
         else if (choice == 'i' || choice == 'I') {
             auto endPlayer = chrono::steady_clock::now();
             chrono::duration<double> elapsedPlayer = endPlayer - startPlayer;
             timePlayer = elapsedPlayer.count();
             DeleteTimeDrop(timePlayer);
-            InventoryPlayer(error_input, item, line_of_sight, loc);
+            InventoryPlayer(error_input, item, line_of_sight, loc, craft_sound, throw_away);
             time_tracking = true;
         }
         ClearLineScreen();
@@ -3632,6 +3996,7 @@ int Player() {
             auto endDelay = chrono::steady_clock::now();
             chrono::duration<double> elapsedSDelay = endDelay - startDelay;
             timeDelay = elapsedSDelay.count();
+            ProductionDelay(timeDelay);
         }
         auto endWorld = chrono::steady_clock::now();
 
