@@ -187,10 +187,6 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
     }
     info.close(); info1.close(); info2.close();
     string g;
-   /* for (int i = 0; i != structure.size(); i++) {
-        cout << structure[i].name << endl;
-    }
-    cin >> g;*/
 }
 //OutInfoFile - вывод информации из файлов в переменные/массивы
 void ChekFile(const char* text, const char* text1, const char* text2, int sizefile[3]) {
@@ -319,99 +315,6 @@ void WorldGeneration(vector<vector<vector<vector<char>>>>& world) {
                         }
                     }
                 }
-
-                /*if (i == 0 && l == 0) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 6 + 1) + 6; }
-                else if (i == world.size() - 1 && l == 0) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 6 + 1) + 6; }
-                else if (l == 0 && i != 0 && i != world.size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 6 + 1) + 6; }
-                else if (i != world.size() - 1 && world[i].size() > world[i + 1].size()) {
-                    if (i == 0 && l < world[i + 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                    else if (i == 0 && l == world[i + 1].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                    else if (i == 0 && l > world[i + 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                    else if (i == 0 && l > world[i + 1].size() - 1 && l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    else if (i != 0) {
-                        if (l < world[i + 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i + 1].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l > world[i + 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        if (world[i].size() < world[i - 1].size()) {
-                            if (l > world[i + 1].size() - 1 && l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                        else if (world[i].size() > world[i - 1].size()) {
-                            if (l < world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l > world[i - 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                            else if (l == world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                    }
-                }
-                else if (i != world.size() - 1 && world[i].size() < world[i + 1].size()) {
-                    if (i == 0 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                    else if (i == 0 && l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    else if (i != 0) {
-                        if (world[i].size() < world[i - 1].size() && i != 0) {
-                            if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                        if (world[i].size() > world[i - 1].size() && i != 0) {
-                            if (l < world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l > world[i - 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                    }
-                }
-                if (i>0 && i != world.size() - 1 && l != 0 && world[i].size() == world[i + 1].size()) {
-                    if (i == 0 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                    else if (i == 0 && l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    else if (i != 0) {
-                        if (i>0 && world[i].size() > world[i - 1].size()) {
-                            if (l < world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l > world[i - 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l > world[i - 1].size() - 1 && l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                        if (i>0 && world[i].size() < world[i - 1].size()) {
-                            if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                        if (i>0 && world[i].size() == world[i - 1].size()) {
-                            if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                            else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                        }
-                    }
-                }
-                else if (i != 0 && l != 0 && world[i].size() == world[i - 1].size()) {
-                    if (i< world.size() - 1 && world[i].size() > world[i + 1].size() && i != world.size() - 1) {
-                        if (l < world[i + 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i + 1].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l > world[i + 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    }
-                    else if (i < world.size() - 1 && world[i].size() < world[i + 1].size() && i != world.size() - 1) {
-                        if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    }
-                    else if (i < world.size() - 1 && world[i].size() == world[i + 1].size()) {
-                        if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 2) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    }
-                    if (i == world.size() - 1) {
-                        if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    }
-                }
-                if (i == world.size() - 1 && l != 0) {
-                    if (i>0 && world[i].size() < world[i - 1].size()) {
-                        if (l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    }
-                    else if (i>0 && world[i].size() > world[i - 1].size()) {
-                        if (l < world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 1 + 1) + 1; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l == world[i - 1].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l > world[i - 1].size() - 1 && l < world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 2) - 1 + 1) + 1; }
-                        else if (l > world[i - 1].size() - 1 && l == world[i].size() - 1) { lines = rand() % ((world[i][l].size() - 7) - 6 + 1) + 6; columns = rand() % ((world[i][l][0].size() - 7) - 1 + 1) + 1; }
-                    }
-                }
-                */
                 if ((rand() % (100 - 1 + 1) + 1) > 40)world[i][l][lines][columns] = 'Y';
                 else world[i][l][lines][columns] = 'S';
             }
@@ -724,7 +627,6 @@ int Creation_Launch() {
         if (choice != 2) {
             ofstream file("WorldParameter.txt"); ofstream file1("WorldStructure.txt"); ofstream file2("PlayerInfo.txt");
             file.close(); file1.close(); file2.close();
-            //Sleep(3000);
             WordSize(world);
             WorldGeneration(world);
             int block = rand() % ((world.size() - 1) - 0 + 1) + 0; int bod_block = (rand() % ((world[block].size() - 1) - 0 + 1) + 0);

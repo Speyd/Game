@@ -90,9 +90,6 @@ void DeleteToolInventory(sf::Sound& break_tool) {
         if (i < inventory[hand].find('('))temp_num[0] += inventory[hand][i];
         if (i > inventory[hand].find('('))temp_num[1] += inventory[hand][i];
     }
-   /* cout << temp_num[1] << endl;
-    cin >> g;*/
-
     if (stoi(temp_num[1]) == 1) { error = 16; break_tool.play(); inventory[hand] = ""; }
     else inventory[hand] = "x1 " + temp_num[0] + "(" + std::to_string(stoi(temp_num[1]) - 1) + "n)";
 }
@@ -200,21 +197,13 @@ void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<
                 else if (inventory[i].find("сундук") != string::npos && drop.name == 'C')wrong_cell = false;
                 else if (inventory[i].find("верстак") != string::npos && drop.name == 'W')wrong_cell = false;
                 else if (inventory[i].find("факел") != string::npos && drop.name == 'i')wrong_cell = false;
-                /*if (inventory[i].find("топор") - 1 == inventory[i].find('-') || inventory[i].find("кирка") - 1 == inventory[i].find('-'))wrong_cell = true;
-                else if (inventory[i].find("дерева") != string::npos && drop.name == 'Y'  && index_switch == false)wrong_cell = false;
-                else if (inventory[i].find("саженца") != string::npos && drop.name == 'y' || inventory[i].find("саженца") != string::npos && drop.name == 'Y' && index_switch == true)wrong_cell = false;
-                else if (inventory[i].find("камня") != string::npos && drop.name != 'S')wrong_cell = false;
-                else if (inventory[i].find("уголь") != string::npos && drop.name != 'S')wrong_cell = false;
-                else if (inventory[i].find("сундук") != string::npos && drop.name != 'C')wrong_cell = false;
-                else if (inventory[i].find("верстак") != string::npos && drop.name != 'W')wrong_cell = false;
-                else if (inventory[i].find("факел") != string::npos && drop.name == 'i')wrong_cell = false;*/
                 if (wrong_cell == false) {
                     for (int l = inventory[i].find('x') + 1; l != inventory[i].find(' '); l++) {
                         temp_text += inventory[i][l];
                     }
                     num = stoi(temp_text);
                     if (num == 12) continue;
-                    else if (12 - num >= drop.amount[j]) {//invent_info == 1 && 
+                    else if (12 - num >= drop.amount[j]) {
                         if (j == 0) {
                             if (drop.name == 'Y') { inventory[i] = "x" + std::to_string(drop.amount[j] + num) + " дерева"; index_switch = true; drop.amount[j] = 0; break; }
                             else if (drop.name == 'S') { inventory[i] = "x" + std::to_string(drop.amount[j] + num) + " камня"; index_switch = true; drop.amount[j] = 0; break; }
@@ -240,29 +229,12 @@ void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<
                             else if (drop.name == 'S') { inventory[i] = "x12 уголь"; drop.amount[j] -= (12 - num); break; }
                         }
                     }
-                    //else if (12 - num >= drop.amount[1] && drop.amount[1] != 0) {//|| 12 - num >= drop.amount[1] && drop.amount[1] != 0 && drop.amount[0] == 0
-                    //    if (drop.name == 'y' || drop.name == 'Y') { inventory[i] = "x" + std::to_string(drop.amount[1] + num) + " саженца"; drop.amount[1] = 0; }
-                    //    else if (drop.name == 'S') { inventory[i] = "x" + std::to_string(drop.amount[1] + num) + " уголь"; drop.amount[1] = 0; }
-                    //}
-                    //else if (12 - num < drop.amount[1] && drop.amount[1] != 0) {//|| 12 - num < drop.amount[1] && drop.amount[1] != 0 && drop.amount[0] == 0 
-                    //    if (drop.name == 'Y' || drop.name == 'y') { inventory[i] = "x12 саженца"; drop.amount[1] -= (12 - num); }
-                    //    else if (drop.name == 'S') { inventory[i] = "x" + std::to_string(drop.amount[1] + num) + " уголь"; drop.amount[1] = 0; break; }
-                    //}
-                    //cout << drop.amount[0] << endl;
-                    //cout << i << endl;
                 }
-                // cout << "g ";
-                // if (drop.amount[0] == 0 && drop.amount[1] != 0 && i == 19 || drop.amount[0] != 0 && drop.amount[1] != 0 && i == 19) { index_switch = true; cout << 'g'; empty_cell = 0; i = 0; }
             }
             else empty_cell++;
-            /*if (drop.amount[1] != 0 && i == 19 && index_switch == true)  break;
-            else if (drop.amount[0] == 0 && drop.amount[1] != 0 && i == 19 || drop.amount[0] != 0 && drop.amount[1] != 0 && i == 19) {
-                index_switch = true; ; empty_cell = 0; i = -1;
-            }*/
         }
         if (drop.amount.size() > 1 && drop.amount[0] != 0 && j == 0) index_switch = true;
     }
-    //cout << empty_cell;
     if (empty_cell > 0) {
         for (int i = 0; i != 20; i++) {
             if (inventory[i].empty()) {
@@ -336,11 +308,9 @@ void InputDropInventory(int& invent_info, int loc[4], int line_of_sight, vector<
             if (drop.name == 'y' || drop.name == 'Y' && index_switch == true)timedrop[timedrop.size() - 1].tempdrop[0] = "x" + std::to_string(drop.amount[1]) + " саженца";
             else if (drop.name == 'S' && index_switch == true) timedrop[timedrop.size() - 1].tempdrop[0] = "x" + std::to_string(drop.amount[1]) + " уголь";
         }
-        //drop.amount.resize(1);
         drop.name = ' ';
     }
     empty_cell = 0;
-    //if (drop.amount[0] != 0 || drop.amount[1] != 0)InputDropInventory(invent_info, loc, line_of_sight, structure, timedrop);
 }
 //InputDropInventory - Доавление в инвентарь добытых ресурсов
 void Menu(char& choice, sf::Music& day_sound, sf::Music& night_sound) {
@@ -485,19 +455,14 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             swap(structure[i], structure[structure.size() - 1]);
                             structure.resize(structure.size() - 1);
                             amount_structmass++;
-                            //if(structure.size()==0)amount_structmass++;
                             break;
                         }
                     }
                     else amount_structmass++;
                 }
                 if (amount_structmass == structure.size() && structure.size() != 0) {
-                    /*cout << amount_structmass;
-                    string g;
-                    cin >> g;*/
                     structure.resize(structure.size() + 1);
                     if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'Y') { structure[structure.size() - 1].name = 'Y'; structure[structure.size() - 1].hp = 4; }
-                    //else if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'y') { structure[structure.size() - 1].name = 'y'; structure[structure.size() - 1].hp = 1; }
                     else if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'S') { structure[structure.size() - 1].name = 'S'; structure[structure.size() - 1].hp = 6; }
                     structure[structure.size() - 1].location[0] = loc[0];
                     structure[structure.size() - 1].location[1] = loc[1];
@@ -544,7 +509,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
                     DeleteToolInventory(break_tool);
                 }
-                //else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'y') { structure[0].name = 'y'; structure[0].hp = 1; }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
                 structure[0].location[2] = loc[2] + 1; structure[0].location[3] = loc[3];
             }
@@ -601,7 +565,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             swap(structure[i], structure[structure.size() - 1]);
                             structure.resize(structure.size() - 1);
                             amount_structmass++;
-                            //if (structure.size() == 0)amount_structmass++;
                             break;
                         }
                     }
@@ -610,7 +573,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                 if (amount_structmass == structure.size() && structure.size() != 0) {
                     structure.resize(structure.size() + 1);
                     if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'Y') { structure[structure.size() - 1].name = 'Y'; structure[structure.size() - 1].hp = 4; }
-                    //else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'y') { structure[structure.size() - 1].name = 'y'; structure[structure.size() - 1].hp = 1; }
                     else if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'S') { structure[structure.size() - 1].name = 'S'; structure[structure.size() - 1].hp = 6; }
                     structure[structure.size() - 1].location[0] = loc[0];
                     structure[structure.size() - 1].location[1] = loc[1];
@@ -657,7 +619,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
                     DeleteToolInventory(break_tool);
                 }
-                //else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'y') { structure[0].name = 'y'; structure[0].hp = 0.5; }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
                 structure[0].location[2] = loc[2]; structure[0].location[3] = loc[3] + 1;
             }
@@ -714,7 +675,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             swap(structure[i], structure[structure.size() - 1]);
                             structure.resize(structure.size() - 1);
                             amount_structmass++;
-                            //if (structure.size() == 0)amount_structmass++;
                             break;
                         }
                     }
@@ -723,7 +683,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                 if (amount_structmass == structure.size() && structure.size() != 0) {
                     structure.resize(structure.size() + 1);
                     if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'Y') { structure[structure.size() - 1].name = 'Y'; structure[structure.size() - 1].hp = 4; }
-                    //else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'y') { structure[structure.size() - 1].name = 'y'; structure[structure.size() - 1].hp = 1; }
                     else if (world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'S') { structure[structure.size() - 1].name = 'S'; structure[structure.size() - 1].hp = 6; }
                     structure[structure.size() - 1].location[0] = loc[0];
                     structure[structure.size() - 1].location[1] = loc[1];
@@ -770,7 +729,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     else if (inventory[hand].find('S') != string::npos)structure[0].hp = 5;
                     DeleteToolInventory(break_tool);
                 }
-                //else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'y') { structure[0].name = 'y'; structure[0].hp = 0.5; }
                 structure[0].location[0] = loc[0]; structure[0].location[1] = loc[1];
                 structure[0].location[2] = loc[2]; structure[0].location[3] = loc[3] - 1;
             }
@@ -827,7 +785,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             swap(structure[i], structure[structure.size() - 1]);
                             structure.resize(structure.size() - 1);
                             amount_structmass++;
-                            //if (structure.size() == 0)amount_structmass++;
                             break;
                         }
                     }
@@ -836,7 +793,6 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                 if (amount_structmass == structure.size() && structure.size() != 0) {
                     structure.resize(structure.size() + 1);
                     if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'Y') { structure[structure.size() - 1].name = 'Y'; structure[structure.size() - 1].hp = 4; }
-                   // else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'y') { structure[structure.size() - 1].name = 'y'; structure[structure.size() - 1].hp = 1; }
                     else if (world[loc[0]][loc[1]][loc[2]][loc[3] - 1] == 'S') { structure[structure.size() - 1].name = 'S'; structure[structure.size() - 1].hp = 6; }
                     structure[structure.size() - 1].location[0] = loc[0];
                     structure[structure.size() - 1].location[1] = loc[1];
@@ -882,7 +838,6 @@ void Map(vector<vector<vector<vector<char>>>>& world, int loc[4]) {
                         cout << "---------"; map_num += 1;
                     }
                     else if(research_map[i][l] == true && map_num != 0)cout << "--------";
-                    //else if(research_map[i][l] == true && l != 0)cout << "-------";
                     else cout << "\t";
                 }
                 cout << endl;
@@ -932,7 +887,7 @@ void StepW(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of
                 error = 21;
                 research_map[loc[0]][loc[1]] = true;
             }
-        }//research_map[loc[0]][loc[1]]=true;
+        }
     }
 }
 //StepW - Шаг вперед
@@ -972,7 +927,7 @@ void StepD(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of
                 error = 21;
                 research_map[loc[0]][loc[1]] = true;
             }
-        }//research_map[loc[0]][loc[1]]=true;
+        }
     }
 }
 //StepD - Шаг вправо 
@@ -1035,7 +990,7 @@ void InputWorldConsole(vector<vector<vector<vector<char>>>>& world, int loc[4], 
             day_sound.stop();
         }
     }
-    int cell_output = 0,num_time_line,num_time_column;//Эта переменная отвечает за поиск ячеек котрые игрок может выдеть
+    int cell_output = 0,num_time_line,num_time_column;//num_time_line,num_time_column - Эти переменная отвечает за поиск ячеек котрые игрок может выдеть
     if (time_world >= 1080 && time_world < 1140 || time_world >= 270 && time_world < 390 || time_world >= 1140 && time_world < 1440 || time_world >= 0 && time_world < 270) {
         AmountTorch(loc);
         if (time_world >= 1140 && time_world < 1440 || time_world >= 0 && time_world < 270) {
@@ -1115,10 +1070,6 @@ void InputWorldConsole(vector<vector<vector<vector<char>>>>& world, int loc[4], 
         else if (i == 1 && error == 13)cout << "    Прежде чем крафтить, освободите инвентарь!";
         else if (i == 1 && error == 14)cout << "    Вы не можете разбить верстак!";
         else if (i == 1 && error == 15)cout << "    Прежде чем ломать верстак, освободите инвентарь!";
-        /*else if (i == 1 && error == 16 && invent_info == 0)cout << "    Инструмент сломалься!";
-        else if (i == 3 && error == 16 && invent_info >= 1 && drop.amount[0] != 0 && drop.amount[1] != 0)cout << "    Инструмент сломалься!";
-        else if (i == 2 && error == 16 && invent_info >= 1 && drop.amount[0] != 0 && drop.amount[1] == 0)cout << "    Инструмент сломалься!";
-        else if (i == 2 && error == 16 && invent_info >= 1 && drop.amount[0] == 0 && drop.amount[1] != 0)cout << "    Инструмент сломалься!";*/
         else if (i == 1 && error == 17)cout << "    Вы не можете рубить эту структуру киркой!";
         else if (i == 1 && error == 18)cout << "    Вы не можете разбить эту структуру топором!";
         else if (i == 1 && error == 19)cout << "    Вы не можете разбить эту структуру рукой!";
@@ -1306,7 +1257,6 @@ void InputConsoleDropChest() {
             num = 0;
             cout << endl;
             for (int l = 0; l != 4; l++) {
-                //if (i < 8 && i != 0 && i != 4)cout << "-----";
                 cout << "-----";
                 if (index[l] != 12) {
                     for (int j = 0; j != dropchest[index_input_chestdrop].drop[index[l]].size()+2; j++)cout << "-";
@@ -1321,10 +1271,7 @@ void InputConsoleDropChest() {
             if (dropchest[index_input_chestdrop].drop[i].empty() == false) {
                 cout << i + 1 << ": " << dropchest[index_input_chestdrop].drop[i];
                 if (i <= 8 )cout << " ";
-                //if (dropchest[index_input_chestdrop].drop[index[num]] != dropchest[index_input_chestdrop].drop[i]) {
                 for (int l = dropchest[index_input_chestdrop].drop[i].size(); l != dropchest[index_input_chestdrop].drop[index[num]].size(); l++)cout << " ";
-                //}
-                  //else cout << " ";
                 cout << " | ";
             }
             else if (dropchest[index_input_chestdrop].drop[i].empty()) {
@@ -2761,10 +2708,6 @@ void MoveItem(int& error_input, int item[2], int line_of_sight, int loc[4]) {
                             swap(dropchest[index_input_chestdrop].drop[item[0]], dropchest[index_input_chestdrop].drop[item[1]]);
                         }
                         else if (choiceswap == '1' && dropchest[index_input_chestdrop].drop[item[0]].empty() == false) {
-                            /*for (int l = dropchest[index_input_chestdrop].drop[item[0]].find('x') + 1; l != dropchest[index_input_chestdrop].drop[item[0]].size(); l++) {
-                                if (l > dropchest[index_input_chestdrop].drop[item[0]].find(' '))temp_text[0] += dropchest[index_input_chestdrop].drop[item[0]][l];
-                                else if (l < dropchest[index_input_chestdrop].drop[item[0]].find(' '))temp_text[2] += dropchest[index_input_chestdrop].drop[item[0]][l];
-                            }*/
                             temp_text[2] = std::to_string(stoi(temp_text[2]) - 1);
                             if (stoi(temp_text[2]) == 0)dropchest[index_input_chestdrop].drop[item[0]] = "";
                             else dropchest[index_input_chestdrop].drop[item[0]] = "x" + temp_text[2] + " " + temp_text[0];
