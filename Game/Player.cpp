@@ -876,8 +876,13 @@ void Map(vector<vector<vector<vector<char>>>>& world, int loc[4]) {
     for (int i = 0; i != world.size(); i++) {
         for (int f = 0; f != 5; f++) {
             if (f == 0 || f == 4) {
+                int map_num = 0;
                 for (int l = 0; l != world[i].size(); l++) {
-                    if (research_map[i][l] == true)cout << "---------";
+                    if (research_map[i][l] == true && map_num == 0) {
+                        cout << "---------"; map_num += 1;
+                    }
+                    else if(research_map[i][l] == true && map_num != 0)cout << "--------";
+                    //else if(research_map[i][l] == true && l != 0)cout << "-------";
                     else cout << "\t";
                 }
                 cout << endl;
@@ -890,7 +895,7 @@ void Map(vector<vector<vector<vector<char>>>>& world, int loc[4]) {
                             else cout << " ";
                         }
                         else if (l == world[i].size() - 1 && j == 7) {
-                            if (research_map[i][l] == true)cout << "|";
+                            if (research_map[i][l] == true)cout << " |";
                             else cout << " ";
                         }
                         else if (j == 4 && f == 2 && loc[0] == i && loc[1] == l)cout << "0";

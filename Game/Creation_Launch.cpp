@@ -1,8 +1,8 @@
-#include <iostream>
+п»ї#include <iostream>
 #include <cmath>
 #include <cstdlib>
 #include <list>
-#include "windows.h"
+#include "Windows.h"
 #include <ctime>
 #include <vector>
 #include <algorithm>
@@ -13,40 +13,46 @@
 #include <thread>
 #include <SFML/Audio.hpp>
 using namespace std;
+#define t "\t\t\t\t\t\t\t\t";
+#define t1 "\t\t\t\t\t\t\t";
+#define t2 "\t\t\t\t\t\t";
+#define t3 "\t\t\t\t\t";
+#define line_symbol1 "   --------------------------------------------------------------------------\n";
+#define line_symbol2 "     ------------------------------\n";
 typedef struct {
-    int loc_in_structure;//Место, где находиться в главном массиве структур
-    string drop[12];//Ячейки под предметы в сундуке
-}InfoChestItem;//Структура котрая хранит информацию о сундуках
-extern vector<InfoChestItem> dropchest;//Массив котрый хранит информацию о сундуках
+    int loc_in_structure;//РњРµСЃС‚Рѕ, РіРґРµ РЅР°С…РѕРґРёС‚СЊСЃСЏ РІ РіР»Р°РІРЅРѕРј РјР°СЃСЃРёРІРµ СЃС‚СЂСѓРєС‚СѓСЂ
+    string drop[12];//РЇС‡РµР№РєРё РїРѕРґ РїСЂРµРґРјРµС‚С‹ РІ СЃСѓРЅРґСѓРєРµ
+}InfoChestItem;//РЎС‚СЂСѓРєС‚СѓСЂР° РєРѕС‚СЂР°СЏ С…СЂР°РЅРёС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЃСѓРЅРґСѓРєР°С…
+extern vector<InfoChestItem> dropchest;//РњР°СЃСЃРёРІ РєРѕС‚СЂС‹Р№ С…СЂР°РЅРёС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ СЃСѓРЅРґСѓРєР°С…
 typedef struct {
-    char name;//Имя структуры(дерево, камень и т.д.)
-    double hp;//Прочность
-    int location[4];//Координаты места в мире
-}InfoStucture;//Главная структура которая хранит информацию про структуры мира
+    char name;//РРјСЏ СЃС‚СЂСѓРєС‚СѓСЂС‹(РґРµСЂРµРІРѕ, РєР°РјРµРЅСЊ Рё С‚.Рґ.)
+    double hp;//РџСЂРѕС‡РЅРѕСЃС‚СЊ
+    int location[4];//РљРѕРѕСЂРґРёРЅР°С‚С‹ РјРµСЃС‚Р° РІ РјРёСЂРµ
+}InfoStucture;//Р“Р»Р°РІРЅР°СЏ СЃС‚СЂСѓРєС‚СѓСЂР° РєРѕС‚РѕСЂР°СЏ С…СЂР°РЅРёС‚ РёРЅС„РѕСЂРјР°С†РёСЋ РїСЂРѕ СЃС‚СЂСѓРєС‚СѓСЂС‹ РјРёСЂР°
 typedef struct {
-    int loc_in_structure;//Место, где находиться в главном массиве структур
-    double hp;//Время исчезновения
-    vector<string> tempdrop;//То, что хранит в себе временный сундук
-}InfoTempItem;//Иформация про временный сундук
+    int loc_in_structure;//РњРµСЃС‚Рѕ, РіРґРµ РЅР°С…РѕРґРёС‚СЊСЃСЏ РІ РіР»Р°РІРЅРѕРј РјР°СЃСЃРёРІРµ СЃС‚СЂСѓРєС‚СѓСЂ
+    double hp;//Р’СЂРµРјСЏ РёСЃС‡РµР·РЅРѕРІРµРЅРёСЏ
+    vector<string> tempdrop;//РўРѕ, С‡С‚Рѕ С…СЂР°РЅРёС‚ РІ СЃРµР±Рµ РІСЂРµРјРµРЅРЅС‹Р№ СЃСѓРЅРґСѓРє
+}InfoTempItem;//РС„РѕСЂРјР°С†РёСЏ РїСЂРѕ РІСЂРµРјРµРЅРЅС‹Р№ СЃСѓРЅРґСѓРє
 typedef struct {
-    int loc_in_structure;//Место, где находиться в главном массиве структур
-    double hp;//Время роста
-}InfoGrowthTree;//Иформация про рост деревьев
-extern vector<InfoGrowthTree> tree;//Иформация про рост деревьев
-extern int hand;//Предмет который помещен в руку
-extern vector<string> craft;//Область крафта в инвентаре(2х2 ячейки) и в верстаке(3х3 ячейки)
-extern string craft_aftermath;//Переменная которая хранит в себе то, что скрафтил игрок в инвентаре-верстаке
-extern vector<InfoTempItem> timedrop;//Временые сундуки
-vector<vector<int>> research_map;//Миникарта
-extern double timerespawne;//Переменная которая хранит врремя до респавна камня на чанках
-vector<vector<vector<vector<char>>>> world;//Динамический массив который хранит мир
-extern int line_of_sight;//Линия взгляда игрока (верх,низ,право,лево)
-extern string inventory[20];//Инвентарь игрока
-extern vector<InfoStucture> structure;//Динамический массив который хранит информацию о всех структурах мира
-extern double time_world;//Время в мире
-extern int day;//День
+    int loc_in_structure;//РњРµСЃС‚Рѕ, РіРґРµ РЅР°С…РѕРґРёС‚СЊСЃСЏ РІ РіР»Р°РІРЅРѕРј РјР°СЃСЃРёРІРµ СЃС‚СЂСѓРєС‚СѓСЂ
+    double hp;//Р’СЂРµРјСЏ СЂРѕСЃС‚Р°
+}InfoGrowthTree;//РС„РѕСЂРјР°С†РёСЏ РїСЂРѕ СЂРѕСЃС‚ РґРµСЂРµРІСЊРµРІ
+extern vector<InfoGrowthTree> tree;//РС„РѕСЂРјР°С†РёСЏ РїСЂРѕ СЂРѕСЃС‚ РґРµСЂРµРІСЊРµРІ
+extern int hand;//РџСЂРµРґРјРµС‚ РєРѕС‚РѕСЂС‹Р№ РїРѕРјРµС‰РµРЅ РІ СЂСѓРєСѓ
+extern vector<string> craft;//РћР±Р»Р°СЃС‚СЊ РєСЂР°С„С‚Р° РІ РёРЅРІРµРЅС‚Р°СЂРµ(2С…2 СЏС‡РµР№РєРё) Рё РІ РІРµСЂСЃС‚Р°РєРµ(3С…3 СЏС‡РµР№РєРё)
+extern string craft_aftermath;//РџРµСЂРµРјРµРЅРЅР°СЏ РєРѕС‚РѕСЂР°СЏ С…СЂР°РЅРёС‚ РІ СЃРµР±Рµ С‚Рѕ, С‡С‚Рѕ СЃРєСЂР°С„С‚РёР» РёРіСЂРѕРє РІ РёРЅРІРµРЅС‚Р°СЂРµ-РІРµСЂСЃС‚Р°РєРµ
+extern vector<InfoTempItem> timedrop;//Р’СЂРµРјРµРЅС‹Рµ СЃСѓРЅРґСѓРєРё
+vector<vector<int>> research_map;//РњРёРЅРёРєР°СЂС‚Р°
+extern double timerespawne;//РџРµСЂРµРјРµРЅРЅР°СЏ РєРѕС‚РѕСЂР°СЏ С…СЂР°РЅРёС‚ РІСЂСЂРµРјСЏ РґРѕ СЂРµСЃРїР°РІРЅР° РєР°РјРЅСЏ РЅР° С‡Р°РЅРєР°С…
+vector<vector<vector<vector<char>>>> world;//Р”РёРЅР°РјРёС‡РµСЃРєРёР№ РјР°СЃСЃРёРІ РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РјРёСЂ
+extern int line_of_sight;//Р›РёРЅРёСЏ РІР·РіР»СЏРґР° РёРіСЂРѕРєР° (РІРµСЂС…,РЅРёР·,РїСЂР°РІРѕ,Р»РµРІРѕ)
+extern string inventory[20];//РРЅРІРµРЅС‚Р°СЂСЊ РёРіСЂРѕРєР°
+extern vector<InfoStucture> structure;//Р”РёРЅР°РјРёС‡РµСЃРєРёР№ РјР°СЃСЃРёРІ РєРѕС‚РѕСЂС‹Р№ С…СЂР°РЅРёС‚ РёРЅС„РѕСЂРјР°С†РёСЋ Рѕ РІСЃРµС… СЃС‚СЂСѓРєС‚СѓСЂР°С… РјРёСЂР°
+extern double time_world;//Р’СЂРµРјСЏ РІ РјРёСЂРµ
+extern int day;//Р”РµРЅСЊ
 extern void ClearLineScreen();
-int graphic = 1, setting_music = 1;//graphic - Переменная для настроек в главном меню | setting_music - настройка музыки(1 - вкл/2 - выкл)
+int graphic = 1, setting_music = 1;//graphic - РџРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РЅР°СЃС‚СЂРѕРµРє РІ РіР»Р°РІРЅРѕРј РјРµРЅСЋ | setting_music - РЅР°СЃС‚СЂРѕР№РєР° РјСѓР·С‹РєРё(1 - РІРєР»/2 - РІС‹РєР»)
 #pragma region File
 void OutInfoFile(const char* text, const char* text1, const char* text2, vector<vector<vector<vector<char>>>>& world, vector<InfoTempItem>& timedrop) {
     ifstream info(text); ifstream info1(text1); ifstream info2(text2);
@@ -58,11 +64,11 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
         if (text_file[0] == '/')check_symbol = '/';
         if (text_file[0] != '\\') {
             for (int i = text_file.find(':') + 1; i != text_file.size(); i++) {
-                if (text_file.find("Блок") == 0) {
+                if (text_file.find("Р‘Р»РѕРє") == 0) {
                     if (text_file.find(':') + 1 == i)num[0] = "";
                     num[0] += text_file[i];
                 }
-                else if (text_file.find("Под") == 0) {
+                else if (text_file.find("РџРѕРґ") == 0) {
                     if (text_file.find(':') + 1 == i) {
                         lines = 0;
                         num[1] = "";
@@ -81,10 +87,10 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
                 }
                 lines++; columns = 0;
             }
-            if (text_file.find("Размерность") == 0) world.resize(stoi(temp_num));
-            else if (text_file.find("Количество-под-блоков") == 0)world[stoi(num[0])].resize(stoi(temp_num));
-            else if (text_file.find("Количество-строк") == 0)world[stoi(num[0])][stoi(num[1])].resize(stoi(temp_num));
-            else if (text_file.find("Количество-столбцов") == 0) {
+            if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ") == 0) world.resize(stoi(temp_num));
+            else if (text_file.find("РљРѕР»РёС‡РµСЃС‚РІРѕ-РїРѕРґ-Р±Р»РѕРєРѕРІ") == 0)world[stoi(num[0])].resize(stoi(temp_num));
+            else if (text_file.find("РљРѕР»РёС‡РµСЃС‚РІРѕ-СЃС‚СЂРѕРє") == 0)world[stoi(num[0])][stoi(num[1])].resize(stoi(temp_num));
+            else if (text_file.find("РљРѕР»РёС‡РµСЃС‚РІРѕ-СЃС‚РѕР»Р±С†РѕРІ") == 0) {
                 for (int i = 0; i != world[stoi(num[0])][stoi(num[1])].size(); i++)world[stoi(num[0])][stoi(num[1])][i].resize(stoi(temp_num));
             }
         }
@@ -100,10 +106,10 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
                 if (text_file.find("name") == 0)structure[amount_structure].name += text_file[i];
                 else temp_num += text_file[i];
             }
-            if (text_file.find("Размерностьs") == 0)structure.resize(stoi(temp_num));
-            else if (text_file.find("Размерностьt") == 0)timedrop.resize(stoi(temp_num));
-            else if (text_file.find("Размерностьc") == 0)dropchest.resize(stoi(temp_num));
-            else if (text_file.find("Размерностьd") == 0)tree.resize(stoi(temp_num));
+            if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊs") == 0)structure.resize(stoi(temp_num));
+            else if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊt") == 0)timedrop.resize(stoi(temp_num));
+            else if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊc") == 0)dropchest.resize(stoi(temp_num));
+            else if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊd") == 0)tree.resize(stoi(temp_num));
             else if (text_file.find("Timerespawne") == 0)timerespawne = stoi(temp_num);
             else if (text_file.find("loc_in_structureT") == 0)timedrop[amount_timedrop].loc_in_structure = stoi(temp_num);
             else if (text_file.find("loc_in_structureD") == 0) { tree[amount_tree].loc_in_structure = stoi(temp_num); amount_tree++; }
@@ -137,7 +143,7 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
         getline(info2, text_file);
         if (text_file.find(':') + 1 != text_file.size() && text_file[0] != '\\' && text_file[0] != '}') {
             for (int i = text_file.find(':') + 1; i != text_file.size(); i++) {
-                if (text_file.find("Блок") == 0) {
+                if (text_file.find("Р‘Р»РѕРє") == 0) {
                     if (i == text_file.find(':') + 1) { num[0] = ""; check_symbol = '/'; }
                     num[0] += text_file[i];
                 }
@@ -147,7 +153,7 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
                     }
                     temp_num += text_file[i];
                 }
-                else if (text_file.find("Инвентарь") == 0) { check_symbol = '{'; break; }
+                else if (text_file.find("РРЅРІРµРЅС‚Р°СЂСЊ") == 0) { check_symbol = '{'; break; }
                 else if (check_symbol == '{') {
                     if (i == text_file.find(':') + 1) {
                         for (int l = 0; l != text_file.find(':'); l++)temp_num += text_file[l];
@@ -159,13 +165,14 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
             }
         }
         if (text_file[0] == '\\' || text_file[0] == '}')check_symbol = ' ';
-        else if (text_file.find("Линия") == 0)line_of_sight = stoi(temp_num);
-        else if (text_file.find("Размерностьcraft") == 0)craft.resize(stoi(temp_num));
-        else if (text_file.find("Размерность") == 0)research_map.resize(stoi(temp_num));
-        else if (text_file.find("Рука") == 0)hand = stoi(temp_num);
-        else if (text_file.find("Время") == 0)time_world = stof(temp_num);
-        else if (text_file.find("День") == 0)day = stof(temp_num);
-        else if (text_file.find("Блок") != 0 && check_symbol == '/') {
+        else if (text_file.find("Р›РёРЅРёСЏ") == 0)line_of_sight = stoi(temp_num);
+        else if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊcraft") == 0)craft.resize(stoi(temp_num));
+        else if (text_file.find("Р Р°Р·РјРµСЂРЅРѕСЃС‚СЊ") == 0)research_map.resize(stoi(temp_num));
+        else if (text_file.find("Р СѓРєР°") == 0)hand = stoi(temp_num);
+        else if (text_file.find("Р Р°Р±РѕС‚Р° РјСѓР·С‹РєРё") == 0)setting_music = stoi(temp_num);
+        else if (text_file.find("Р’СЂРµРјСЏ") == 0)time_world = stof(temp_num);
+        else if (text_file.find("Р”РµРЅСЊ") == 0)day = stof(temp_num);
+        else if (text_file.find("Р‘Р»РѕРє") != 0 && check_symbol == '/') {
             research_map[stoi(num[0])].resize(research_map[stoi(num[0])].size() + 1);
             research_map[stoi(num[0])][stoi(num[1])] = stoi(temp_num);
         }
@@ -174,7 +181,7 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
             if (text_file.find(':') + 1 != text_file.size())craft[stoi(temp_num)] = temp_text;
         }
         else if (text_file.find("Craft_aftermath") == 0)craft_aftermath = temp_num;
-        else if (text_file.find("Инвентарь") != 0 && check_symbol == '{') {
+        else if (text_file.find("РРЅРІРµРЅС‚Р°СЂСЊ") != 0 && check_symbol == '{') {
             if (temp_text != "")inventory[stoi(temp_num)] = temp_text;
         }
     }
@@ -185,7 +192,7 @@ void OutInfoFile(const char* text, const char* text1, const char* text2, vector<
     }
     cin >> g;*/
 }
-//OutInfoFile - вывод информации из файлов в переменные/массивы
+//OutInfoFile - РІС‹РІРѕРґ РёРЅС„РѕСЂРјР°С†РёРё РёР· С„Р°Р№Р»РѕРІ РІ РїРµСЂРµРјРµРЅРЅС‹Рµ/РјР°СЃСЃРёРІС‹
 void ChekFile(const char* text, const char* text1, const char* text2, int sizefile[3]) {
     fstream file(text); fstream file1(text1); fstream file2(text2);
     file.seekg(0, std::ios::end);
@@ -194,7 +201,7 @@ void ChekFile(const char* text, const char* text1, const char* text2, int sizefi
     sizefile[0] = file.tellg(); sizefile[1] = file1.tellg(); sizefile[2] = file2.tellg();
     file.close(); file1.close(); file2.close();
 }
-//ChekFile - проверка файлов на пустоту
+//ChekFile - РїСЂРѕРІРµСЂРєР° С„Р°Р№Р»РѕРІ РЅР° РїСѓСЃС‚РѕС‚Сѓ
 #pragma endregion
 #pragma region World
 void WorldGeneration(vector<vector<vector<vector<char>>>>& world) {
@@ -474,7 +481,7 @@ void WorldGeneration(vector<vector<vector<vector<char>>>>& world) {
         }
     }
 }
-//WorldGeneration - генерация мира
+//WorldGeneration - РіРµРЅРµСЂР°С†РёСЏ РјРёСЂР°
 void WordSize(vector<vector<vector<vector<char>>>>& world) {
     srand(time(0));
     int num = rand() % (6 - 4 + 1) + 4;
@@ -490,8 +497,18 @@ void WordSize(vector<vector<vector<vector<char>>>>& world) {
         }
     }
 }
-//WordSize - размернсоть мира(блок/куб/строка/столбец)
+//WordSize - СЂР°Р·РјРµСЂРЅСЃРѕС‚СЊ РјРёСЂР°(Р±Р»РѕРє/РєСѓР±/СЃС‚СЂРѕРєР°/СЃС‚РѕР»Р±РµС†)
 #pragma endregion
+void InputWildall() {
+    setlocale(LC_ALL, "ru_RU.utf8");
+    ClearLineScreen();
+    cout << t;
+    cout << u8"\033[1mв•”в•¦в•ђв•¦в•—в•”в•ђв•ђв•—в•”в•— в•”в•ђв•ђв•—в•”в•ђв•ђв•—в•”в•— в•”в•— \n" << t;
+    cout << u8"в•‘в•‘в•‘в•‘в•‘в•љв•‘в•‘в•ќв•‘в•‘ в•љв•—в•—в•‘в•‘в•”в•—в•‘в•‘в•‘ в•‘в•‘ \n" << t;
+    cout << u8"в•‘в•‘в•‘в•‘в•‘в•”в•‘в•‘в•—в•‘в•љв•—в•”в•©в•ќв•‘в•‘в• в•Јв•‘в•‘в•љв•—в•‘в•љв•—\n" << t;
+    cout << u8"в•љв•ђв•©в•ђв•ќв•љв•ђв•ђв•ќв•љв•ђв•ќв•љв•ђв•ђв•ќв•љв•ќв•љв•ќв•љв•ђв•ќв•љв•ђв•ќ\n\033[0m";
+    setlocale(LC_ALL, "Rus");
+}
 int Creation_Launch() {
     srand(time(0));
     #pragma region Music_Sound
@@ -509,52 +526,68 @@ int Creation_Launch() {
     #pragma endregion
     music_menu.play();
     int choice = 1, sizefile[3] = { 0,0,0 }, page = 5;//amount_save = 0,
-    //choice - Переменная для выбора;sizefile - Хранит в себе размер файла, page - для страниц в меню
-    string enter = "1";//enter - переменная для нажатия enter
+    //choice - РџРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РІС‹Р±РѕСЂР°;sizefile - РҐСЂР°РЅРёС‚ РІ СЃРµР±Рµ СЂР°Р·РјРµСЂ С„Р°Р№Р»Р°, page - РґР»СЏ СЃС‚СЂР°РЅРёС† РІ РјРµРЅСЋ
+    string enter = "1";//enter - РїРµСЂРµРјРµРЅРЅР°СЏ РґР»СЏ РЅР°Р¶Р°С‚РёСЏ enter
     #pragma region Chek_Choice/Selection_Choice
     do {
-        ClearLineScreen(); cout << "\tWildall\nВыберете действия:\n[1] - Создать новый мир\n[2] - Продолжить игру\n[3] - Настройки\n[4] - Об игре\n";
-        if (choice >= 0 && choice <= 4) { cout << "Ваш выбор: "; cin >> choice; }
-        else if (choice < 1 || choice>4) { cout << "Неверный выбор!\nВведите ваш выбор снова: "; cin >> choice; }
+        InputWildall();
+        cout << t;
+        cout << " [1] - РЎРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ РјРёСЂ\n" << t; 
+        cout << " [2] - РџСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ\n" << t;
+        cout << " [3] - РќР°СЃС‚СЂРѕР№РєРё\n" << t;
+        cout<<" [4] - РћР± РёРіСЂРµ\n";
+        if (choice >= 0 && choice <= 4) { cout << t cout << " Р’Р°С€ РІС‹Р±РѕСЂ: "; cin >> choice; }
+        else if (choice < 1 || choice>4) { cout << t; cout << " РќРµРІРµСЂРЅС‹Р№ РІС‹Р±РѕСЂ!\n" << t;cout<< " Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°: "; cin >> choice; }
         if (choice == 3) {
             button.play();
             do {
                 do {
-                    ClearLineScreen(); cout << "\t\tНастройки\n[1] - Графика\n[2] - Музыка\n";
-                    if (choice == 5) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода): "; cin >> choice; }
-                    else { cout << "Выш выбор(0 для выхода): "; cin >> choice; }
+                    InputWildall();
+                    cout << t;
+                    cout << "\tРќР°СЃС‚СЂРѕР№РєРё\n" << t;
+                    cout << "[1] - Р“СЂР°С„РёРєР°\n" << t;
+                    cout<<"[2] - РњСѓР·С‹РєР°\n";
+                    if (choice == 5) { cout << t; cout << " РќРµС‚Сѓ С‚Р°РєРѕРіРѕ РІС‹Р±РѕСЂР°!\n" << t1;cout<< "  Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°(0 РґР»СЏ РІС‹С…РѕРґР°): "; cin >> choice; }
+                    else { cout << t; cout << "Р’Р°С€ РІС‹Р±РѕСЂ(0 РґР»СЏ РІС‹С…РѕРґР°): "; cin >> choice; }
                     if (choice > 2 || choice < 0)choice = 5;
                 } while (choice > 2 && choice < 0);
                 button.play();
                 if (choice == 1) {
+                    int start_setting_graphic = graphic;
                     do {
-                        ClearLineScreen(); cout << "\t\tГрафика\n";
-                        if (graphic == 1) { cout << "[1] - Низкая графика   <---- Ваш выбор\n[2] - Супер низкая графика\n"; }
-                        else if (graphic == 2) { cout << "[1] - Низкая графика\n[2] - Супер низкая графика   <---- Ваш выбор\n"; }
-                        else cout << "[1] - Низкая графика\n[2] - Супер низкая графика\n";
+                        InputWildall();
+                        cout << t;
+                        cout << "\t\033[1mР“СЂР°С„РёРєР°\033[0m\n";
+                        if (graphic == 1) { cout << t; cout << "[1] - РќРёР·РєР°СЏ РіСЂР°С„РёРєР°   <---- Р’Р°С€ РІС‹Р±РѕСЂ\n" << t;cout << "[2] - РЎСѓРїРµСЂ РЅРёР·РєР°СЏ РіСЂР°С„РёРєР°\n"; }
+                        else if (graphic == 2) { cout << t; cout << "[1] - РќРёР·РєР°СЏ РіСЂР°С„РёРєР°\n" << t;cout<< "[2] - РЎСѓРїРµСЂ РЅРёР·РєР°СЏ РіСЂР°С„РёРєР°   <---- Р’Р°С€ РІС‹Р±РѕСЂ\n"; }
+                        else { cout << t; cout << "[1] - РќРёР·РєР°СЏ РіСЂР°С„РёРєР°\n" << t;cout << "[2] - РЎСѓРїРµСЂ РЅРёР·РєР°СЏ РіСЂР°С„РёРєР°\n"; }
                         choice = graphic;
-                        if (graphic < 0 || graphic > 2) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода): "; cin >> graphic; }
-                        else { cout << "Выш выбор(0 для выхода): "; cin >> graphic; }
+                        if (graphic < 0 || graphic > 2) { cout << t; cout << "   РќРµС‚Сѓ С‚Р°РєРѕРіРѕ РІС‹Р±РѕСЂР°!\n" << t1;cout << "   Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°(0 РґР»СЏ РІС‹С…РѕРґР°): "; cin >> graphic; }
+                        else { cout << t; cout << "Р’Р°С€ РІС‹Р±РѕСЂ(0 РґР»СЏ РІС‹С…РѕРґР°): "; cin >> graphic; }
                         if (graphic < 0 || graphic>2)choice = 3;
                         if (graphic == 0) { graphic = choice; choice = 0; }
                         button.play();
                     } while (choice != 0);
+                    if (graphic < 1 || graphic > 2)graphic = start_setting_graphic;
                 }else if (choice == 2) {
                     int start_setting_music = setting_music;
                     do {
-                        ClearLineScreen(); cout << "\t\tМузыка\n";
-                        if (setting_music == 1) { cout << "[1] - Вкл. музыка   <---- Ваш выбор\n[2] - Выл. музыка\n"; }
-                        else if (setting_music == 2) { cout << "[1] - Вкл. музыка\n[2] - Выл. музыка   <---- Ваш выбор\n"; }
-                        else cout << "[1] - Вкл. музыка\n[2] - Выл. музыка\n";
+                        InputWildall();
+                        cout << t; cout << "\t\033[1mРњСѓР·С‹РєР°\033[0m\n";
+                        if (setting_music == 1) { cout << t; cout << "[1] - Р’РєР». РјСѓР·С‹РєР°   <---- Р’Р°С€ РІС‹Р±РѕСЂ\n" << t; cout << "[2] - Р’С‹Р». РјСѓР·С‹РєР°\n"; }
+                        else if (setting_music == 2) { cout << t; cout << "[1] - Р’РєР». РјСѓР·С‹РєР°\n" << t; cout << "[2] - Р’С‹Р». РјСѓР·С‹РєР°   <---- Р’Р°С€ РІС‹Р±РѕСЂ\n"; }
+                        else { cout << t; cout << "[1] - Р’РєР». РјСѓР·С‹РєР°\n" << t;cout << "[2] - Р’С‹Р». РјСѓР·С‹РєР°\n"; }
                         choice = setting_music;
-                        if (choice == 3) { cout << "Нету такого выбора!\nВведите ваш выбор снова(0 для выхода/изменения настроек): "; cin >> setting_music; }
-                        else { cout << "Выш выбор(0 для выхода/изменения настроек): "; cin >> setting_music; }
+                        if (choice == 3) { cout << t; cout << "   РќРµС‚Сѓ С‚Р°РєРѕРіРѕ РІС‹Р±РѕСЂР°!\n" << t2; cout<<"Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°(0 РґР»СЏ РІС‹С…РѕРґР° / РёР·РјРµРЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє): "; cin >> setting_music; }
+                        else { cout << t1; cout << "  Р’Р°С€ РІС‹Р±РѕСЂ(0 РґР»СЏ РІС‹С…РѕРґР°/РёР·РјРµРЅРµРЅРёСЏ РЅР°СЃС‚СЂРѕРµРє): "; cin >> setting_music; }
                         if (setting_music < 0 || setting_music>2)choice = 3;
                         if (setting_music == 0) { setting_music = choice; choice = 0; }
                         button.play();
                     } while (choice != 0);
+                    
                     if (start_setting_music == 1 && setting_music == 2)music_menu.stop();
-                    else if(start_setting_music == 2 && setting_music == 1)music_menu.play();
+                    else if (start_setting_music == 2 && setting_music == 1)music_menu.play();
+                    else setting_music = start_setting_music;
                 }
             } while (choice != 0);
         }
@@ -562,7 +595,7 @@ int Creation_Launch() {
             button.play();
             choice = 1;
             do {
-                ClearLineScreen();
+                InputWildall();
                 if (choice == 1) {
                     if (page == 1)choice++;
                 }
@@ -574,20 +607,55 @@ int Creation_Launch() {
                     if (page == 1)choice--;
                 }
                 if (choice == 1) {
-                    cout << "\t\tСтруктуры мира:\nY - дерево\ny - саженец\nS - камень\nT - временный сундук\nC - сундук\nW - верстак";
+                    cout << t;
+                    cout << "     \033[1mРЎС‚СЂСѓРєС‚СѓСЂС‹ РјРёСЂР°\033[0m\n" << t;
+                    cout << "  0 - РёРіСЂРѕРє\n" << t;
+                    cout << "  Y - РґРµСЂРµРІРѕ\n" << t;
+                    cout << "  y - СЃР°Р¶РµРЅРµС†\n" << t;
+                    cout << "  S - РєР°РјРµРЅСЊ\n" << t;
+                    cout << "  T - РІСЂРµРјРµРЅРЅС‹Р№ СЃСѓРЅРґСѓРє\n" << t;
+                    cout << "  C - СЃСѓРЅРґСѓРє\n" << t;
+                    cout << "  W - РІРµСЂСЃС‚Р°Рє\n" << t;
+                    cout << "  i - С„Р°РєРµР»\n";
                 }
                 else if (choice == 2) {
-                    cout << "Механики крафта:\n\n1. Кафтить можна как в инвентаре(ячейки 2х2) так и на верстаке(ячейки 3х3)\n\n2. Если при крафте предмета у вас нету места в инвентаре, то этот предмет автоматически добавиться к вам в инвентарь после освобождения инвентаря\n\n3. Также если у вас нету места и вы скрафтили какой нибудь предмет, то вы не сможете крафтить пока не освободите инвентарь\n";
+                    cout << t;
+                    cout << "     \033[1mРњРµС…Р°РЅРёРєРё РєСЂР°С„С‚Р°\033[0m\n" << t3;
+                    cout << "   1. РљР°С„С‚РёС‚СЊ РјРѕР¶РЅР° РєР°Рє РІ РёРЅРІРµРЅС‚Р°СЂРµ(СЏС‡РµР№РєРё 2С…2), С‚Р°Рє Рё РЅР° РІРµСЂСЃС‚Р°РєРµ(СЏС‡РµР№РєРё 3С…3)\n" << t3;
+                    cout << line_symbol1;cout << t3;
+                    cout << "   2. Р•СЃР»Рё РїСЂРё РєСЂР°С„С‚Рµ РїСЂРµРґРјРµС‚Р° Сѓ РІР°СЃ РЅРµС‚Сѓ РјРµСЃС‚Р° РІ РёРЅРІРµРЅС‚Р°СЂРµ, С‚Рѕ СЌС‚РѕС‚ РїСЂРµРґРјРµС‚ -\n" << t3;
+                    cout << "      Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё РґРѕР±Р°РІРёС‚СЊСЃСЏ Рє РІР°Рј РІ РёРЅРІРµРЅС‚Р°СЂСЊ РїРѕСЃР»Рµ РµРіРѕ РѕСЃРІРѕР±РѕР¶РґРµРЅРёСЏ\n" << t3;
+                    cout << line_symbol1; cout << t3;
+                    cout << "   3. РўР°РєР¶Рµ РµСЃР»Рё Сѓ РІР°СЃ РЅРµС‚Сѓ РјРµСЃС‚Р° Рё РІС‹ СЃРєСЂР°С„С‚РёР»Рё РєР°РєРѕР№ РЅРёР±СѓРґСЊ РїСЂРµРґРјРµС‚, С‚Рѕ РІС‹ -\n" << t3;
+                    cout << "      РЅРµ СЃРјРѕР¶РµС‚Рµ РєСЂР°С„С‚РёС‚СЊ РїРѕРєР° РЅРµ РѕСЃРІРѕР±РѕРґРёС‚Рµ РёРЅРІРµРЅС‚Р°СЂСЊ\n"<<t3;
+                    cout << line_symbol1;
                 }
                 else if (choice == 3) {
-                    cout << "Предметы которые можна скрафтить:\n\n1. Доски\n\n2. Палки\n\n3. Верстак\n\n4. Сундук\n\n5. Деревянный-каменный топор\n\n6. Деревянная-каменная кирка\n";
+                    cout << t1;
+                    cout << "     \033[1mРџСЂРµРґРјРµС‚С‹ РєРѕС‚РѕСЂС‹Рµ РјРѕР¶РЅР° СЃРєСЂР°С„С‚РёС‚СЊ\033[0m\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      1. Р”РѕСЃРєРё\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      2. РџР°Р»РєРё\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      3.Р’РµСЂСЃС‚Р°Рє\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      4.РЎСѓРЅРґСѓРє\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      5.Р”РµСЂРµРІСЏРЅРЅС‹Р№ - РєР°РјРµРЅРЅС‹Р№ С‚РѕРїРѕСЂ\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      6.Р”РµСЂРµРІСЏРЅРЅР°СЏ - РєР°РјРµРЅРЅР°СЏ РєРёСЂРєР°\n" << t1;
+                    cout << line_symbol2; cout << t1;
+                    cout << "      7.Р¤Р°РєРµР»\n" << t1;
+                    cout << line_symbol2;
                 }
-                cout << "\n" << choice << " из 3 страниц\n";
-                if (choice == 2)cout << "[1] - Предыдущая страница | [2] - Следуйщая страница";
-                if (choice == 1)cout << "[1] - Следуйщая страница";
-                if (choice == 3)cout << "[1] - Предыдущая страница";
-                if (page == 4) { cout << "\nНету такого выбора\nВведите ваш выбор снова(0 для выхода): "; cin >> page; }
-                else { cout << "\nВаш выбор(0 для выхода): "; cin >> page; }
+                cout << t;
+                cout << "     "<<choice << " РёР· 3 СЃС‚СЂР°РЅРёС†\n";
+                if (choice == 2) { cout << t2; cout << " [1] - РџСЂРµРґС‹РґСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р° | [2] - РЎР»РµРґСѓР№С‰Р°СЏ СЃС‚СЂР°РЅРёС†Р°\n"; }
+                if (choice == 1) { cout << t; cout << "[1] - РЎР»РµРґСѓР№С‰Р°СЏ СЃС‚СЂР°РЅРёС†Р°\n"; }
+                if (choice == 3) { cout << t; cout << "[1] - РџСЂРµРґС‹РґСѓС‰Р°СЏ СЃС‚СЂР°РЅРёС†Р°\n"; }
+                if (page == 4) { cout << t; cout << "   РќРµС‚Сѓ С‚Р°РєРѕРіРѕ РІС‹Р±РѕСЂР°\n" << t1;cout << "   Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°(0 РґР»СЏ РІС‹С…РѕРґР°): "; cin >> page; }
+                else { cout << t; cout << " Р’Р°С€ РІС‹Р±РѕСЂ(0 РґР»СЏ РІС‹С…РѕРґР°): "; cin >> page; }
                 if (choice == 1 || choice == 3) {
                     if (page < 0 || page>1)page = 4;
                 }
@@ -605,22 +673,37 @@ int Creation_Launch() {
     if (choice == 2) {
         if (sizefile[0] != 0 && sizefile[1] != 0 && sizefile[2] != 0) {
             OutInfoFile("WorldParameter.txt", "WorldStructure.txt", "PlayerInfo.txt", world, timedrop);
+            cin.ignore();
             while (enter.empty() != true) {
-                cout << "Нажмите enter для начала игры: ";
+                cout << t;
+                cout << " РќР°Р¶РјРёС‚Рµ enter РґР»СЏ РЅР°С‡Р°Р»Р° РёРіСЂС‹: ";
                 getline(cin, enter);
             }
-            if (graphic == 2) { ClearLineScreen(); cout << "Вы умерли! Графика стала настолько плохой, что перестала отрисовывать мир!:)"; }
+            if (graphic == 2) { ClearLineScreen(); cout << "Р’С‹ СѓРјРµСЂР»Рё! Р“СЂР°С„РёРєР° СЃС‚Р°Р»Р° РЅР°СЃС‚РѕР»СЊРєРѕ РїР»РѕС…РѕР№, С‡С‚Рѕ РїРµСЂРµСЃС‚Р°Р»Р° РѕС‚СЂРёСЃРѕРІС‹РІР°С‚СЊ РјРёСЂ!:)"; }
         }
         else if (sizefile[0] == 0 && sizefile[1] == 0 && sizefile[2] == 0) {
-            cout << "У вас нету сохранений!\nМир создастся автоматически!\n";
+            cout << t;
+            cout << " ----------------------------\n" << t;
+            cout << " РЈ РІР°СЃ РЅРµС‚Сѓ СЃРѕС…СЂР°РЅРµРЅРёР№!\n" << t;cout << " РњРёСЂ СЃРѕР·РґР°СЃС‚СЃСЏ Р°РІС‚РѕРјР°С‚РёС‡РµСЃРєРё!\n";
             choice = 1;
         }
         else if (sizefile[0] == 0 || sizefile[1] == 0 || sizefile[2] == 0) {
             do {
-                cout << "Повреждена целостность данных(некоторые данные отсутствуют)!\nСоздаем новый мир?\n[1] - Да | [2] - Нет";
-                if (choice == 3) { cout << "\nНету такого выбора!\nВведите ваш выбор снова: "; cin >> choice; }
-                else { cout << "\nВаш выбор: "; cin >> choice; }
-                if (choice < 1 || choice>2) { choice = 3; ClearLineScreen(); }
+                cout << t;
+                cout <<" -------------------------\n" << t2; cout << "РџРѕРІСЂРµР¶РґРµРЅР° С†РµР»РѕСЃС‚РЅРѕСЃС‚СЊ РґР°РЅРЅС‹С…(РЅРµРєРѕС‚РѕСЂС‹Рµ РґР°РЅРЅС‹Рµ РѕС‚СЃСѓС‚СЃС‚РІСѓСЋС‚)!\n" << t;
+                cout << " РЎРѕР·РґР°РµРј РЅРѕРІС‹Р№ РјРёСЂ ?\n" << t;
+                cout<< " [1] - Р”Р° | [2] - РќРµС‚\n" << t;
+                if (choice == 3) { cout << " РќРµС‚Сѓ С‚Р°РєРѕРіРѕ РІС‹Р±РѕСЂР°!\n" << t;cout<< "Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°: "; cin >> choice; }
+                else { cout << " Р’Р°С€ РІС‹Р±РѕСЂ: "; cin >> choice; }
+                if (choice < 1 || choice>2) { 
+                    choice = 3; 
+                    InputWildall();
+                    cout << t;
+                    cout << " [1] - РЎРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ РјРёСЂ\n" << t;
+                    cout << " [2] - РџСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ\n" << t;
+                    cout << " [3] - РќР°СЃС‚СЂРѕР№РєРё\n" << t;
+                    cout << " [4] - РћР± РёРіСЂРµ\n";
+                }
             } while (choice < 1 || choice>2);
             button.play();
         }
@@ -628,9 +711,12 @@ int Creation_Launch() {
     if (choice == 1) {
         if (sizefile[0] != 0 && sizefile[1] != 0 && sizefile[2] != 0) {
             do {
-                cout << "Вы уверенны что хотите создать новый мир?\nСохранения с прежнего мира удаляться!\n[1] - Создать новый мир | [2] - Не создавать\n";
-                if (choice == 3) { cout << "Нету такого выбора!\nВведите ваш выбор снова: "; cin >> choice; }
-                else { cout << "Ваш выбор: "; cin >> choice; }
+                cout << t1;
+                cout << "Р’С‹ СѓРІРµСЂРµРЅРЅС‹ С‡С‚Рѕ С…РѕС‚РёС‚Рµ СЃРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ РјРёСЂ?\n" << t1;
+                cout << "РЎРѕС…СЂР°РЅРµРЅРёСЏ СЃ РїСЂРµР¶РЅРµРіРѕ РјРёСЂР° СѓРґР°Р»СЏС‚СЊСЃСЏ!\n" << t1;
+                cout<<"[1] - РЎРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ РјРёСЂ | [2] - РќРµ СЃРѕР·РґР°РІР°С‚СЊ\n" << t;
+                if (choice == 3) { cout << "РќРµС‚Сѓ С‚Р°РєРѕРіРѕ РІС‹Р±РѕСЂР°!\n" << t;cout<< "Р’РІРµРґРёС‚Рµ РІР°С€ РІС‹Р±РѕСЂ СЃРЅРѕРІР°: "; cin >> choice; }
+                else { cout << "Р’Р°С€ РІС‹Р±РѕСЂ: "; cin >> choice; }
                 if (choice < 1 || choice>2) { choice = 3; ClearLineScreen(); }
             } while (choice < 1 || choice>2);
             button.play();
@@ -638,19 +724,28 @@ int Creation_Launch() {
         if (choice != 2) {
             ofstream file("WorldParameter.txt"); ofstream file1("WorldStructure.txt"); ofstream file2("PlayerInfo.txt");
             file.close(); file1.close(); file2.close();
-            Sleep(3000);
+            //Sleep(3000);
             WordSize(world);
             WorldGeneration(world);
             int block = rand() % ((world.size() - 1) - 0 + 1) + 0; int bod_block = (rand() % ((world[block].size() - 1) - 0 + 1) + 0);
             research_map[block][bod_block] = true;
             world[block][bod_block][(rand() % ((world[block][0].size() - 10) - 8 + 1) + 8)][(rand() % ((world[block][0][0].size() - 10) - 8 + 1) + 8)] = '0';
-            cout << "Мир создался..." << endl;
+            cout << t;
+            Sleep(3000);
+            InputWildall();
+            cout << t;
+            cout << " [1] - РЎРѕР·РґР°С‚СЊ РЅРѕРІС‹Р№ РјРёСЂ\n" << t;
+            cout << " [2] - РџСЂРѕРґРѕР»Р¶РёС‚СЊ РёРіСЂСѓ\n" << t;
+            cout << " [3] - РќР°СЃС‚СЂРѕР№РєРё\n" << t;
+            cout << " [4] - РћР± РёРіСЂРµ\n" << t;
+            cout << " ----------------------------\n" << t;cout<< " РњРёСЂ СЃРѕР·РґР°Р»СЃСЏ..." << endl;
             cin.ignore();
             while (enter.empty() != true) {
-                cout << "Нажмите enter для начала игры: ";
+                cout << t;
+                cout << " РќР°Р¶РјРёС‚Рµ enter РґР»СЏ РЅР°С‡Р°Р»Р° РёРіСЂС‹: ";
                 getline(cin, enter);
             }
-            if (graphic == 2) { ClearLineScreen(); cout << "Вы умерли! Графика стала настолько плохой, что перестала отрисовывать мир!:)"; }
+            if (graphic == 2) { ClearLineScreen(); cout << "Р’С‹ СѓРјРµСЂР»Рё! Р“СЂР°С„РёРєР° СЃС‚Р°Р»Р° РЅР°СЃС‚РѕР»СЊРєРѕ РїР»РѕС…РѕР№, С‡С‚Рѕ РїРµСЂРµСЃС‚Р°Р»Р° РѕС‚СЂРёСЃРѕРІС‹РІР°С‚СЊ РјРёСЂ!:)"; }
         }
     }
     if(setting_music == 1)music_menu.stop();

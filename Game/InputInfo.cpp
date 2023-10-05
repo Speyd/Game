@@ -41,6 +41,7 @@ extern string inventory[20];//Инвентарь игрока
 extern vector<vector<vector<vector<char>>>> world;////Динамический массив который хранит мир
 extern int line_of_sight;//Линия взгляда игрока (верх,низ,право,леов)
 extern int day;//День
+extern int setting_music;//Настройка музыки(1 - вкл. 2 - выкл)
 extern double time_world;//Время в мире
 void InputInfoWorldFile(const char* text, vector<vector<vector<vector<char>>>>& world) {
     ofstream info(text);
@@ -68,6 +69,7 @@ void InputInfoWorldFile(const char* text, vector<vector<vector<vector<char>>>>& 
 void InputInfoPlayerFile(const char* text) {
     ofstream info(text);
     info << "Линия взгляда:" << line_of_sight << endl;
+    info << "Работа музыки:" << setting_music << endl;
     info << "Время:" << time_world << endl;
     info << "День:" << day << endl;
     info << "Рука:" << hand << endl;
