@@ -50,7 +50,7 @@ extern int setting_music;
 extern void ClearLineScreen();//Очистка Экрана
 extern vector<vector<int>> research_map;//Миникарта
 extern vector<vector<vector<vector<char>>>> world;//Динамический массив который хранит мир
-double timerespawne, save_time_delay = 0, time_world = 390;
+double timerespawne, save_time_delay = 0, time_world = 1430;
 //timerespawne - Переменная которая хранит время до респавна камня на чанках
 //save_time_delay - Переменная которая хранит в себе время на колдаун действий
 //time_world - Переменная которая хранит время мира(день-ночь)
@@ -979,7 +979,11 @@ void AmountTorch(int loc[4]) {
 }
 //AmountTorch - Количество факелов в чанке
 void InputWorldConsole(vector<vector<vector<vector<char>>>>& world, int loc[4], int& invent_info, int line_of_sight,sf::Sound& take, sf::Music& day_sound,sf::Music& night_sound) {
-    if (time_world >= 1440) { time_world = 0; day++; }
+    if (time_world >= 1440) { 
+        if (time_world - 1440 <= 0)time_world = 0;
+        else time_world -= 1440 ; 
+        day++; 
+    }
     if (setting_music == 1) {
         if (time_world >= 390 && time_world < 1110 && day_sound.getStatus() == 0) {
             day_sound.play();
