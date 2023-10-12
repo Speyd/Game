@@ -50,7 +50,7 @@ extern int setting_music;
 extern void ClearLineScreen();//Очистка Экрана
 extern vector<vector<int>> research_map;//Миникарта
 extern vector<vector<vector<vector<char>>>> world;//Динамический массив который хранит мир
-double timerespawne, save_time_delay = 0, time_world = 1430;
+double timerespawne, save_time_delay = 0, time_world = 390;
 //timerespawne - Переменная которая хранит время до респавна камня на чанках
 //save_time_delay - Переменная которая хранит в себе время на колдаун действий
 //time_world - Переменная которая хранит время мира(день-ночь)
@@ -66,6 +66,36 @@ int error = 0, error_input = 0, item[2], hand = 0, empty_cell = 0, line_of_sight
 bool check_fatigue = false;//Эта переменная отвечает за то, рубил/бил/ломал ли грок что-то
 vector<vector<int>> torch;
 vector<string> craft;//Область крафта в инвентаре(2х2 ячейки) и в верстаке(3х3 ячейки)
+#pragma region PlaySound
+void ReproductionSoundTree(sf::Sound& breaking_wood_1, sf::Sound& breaking_wood_2, sf::Sound& breaking_wood_3, sf::Sound& breaking_wood_4, sf::Sound& breaking_wood_5, sf::Sound& hit_hand_1, sf::Sound& hit_hand_2, sf::Sound& hit_hand_3, sf::Sound& hit_hand_4) {
+    //hit_hand_1.play();
+    if (inventory[hand].find("топор") != string::npos) {
+        int num = rand() % (5 - 1 + 1) + 1;
+        if (num == 1) breaking_wood_1.play();
+        else if (num == 2) breaking_wood_2.play();
+        else if (num == 3) breaking_wood_3.play();
+        else if (num == 4) breaking_wood_4.play();
+        else if (num == 5) breaking_wood_5.play();
+    }
+    else {
+        int num = rand() % (4 - 1 + 1) + 1;
+        if (num == 1)hit_hand_1.play();
+        else if (num == 2) hit_hand_2.play();
+        else if (num == 3) hit_hand_3.play();
+        else if (num == 4) hit_hand_4.play();
+    }
+}
+//ReproductionSoundTre - звук ударов по дереву
+void ReproductionSoundMove(sf::Sound& move_1, sf::Sound& move_2, sf::Sound& move_3, sf::Sound& move_4, sf::Sound& move_5) {
+    int num = rand() % (5 - 1 + 1) + 1;
+    if (num == 1)move_1.play();
+    else if (num == 2)move_2.play();
+    else if (num == 3)move_3.play();
+    else if (num == 4)move_4.play();
+    else if (num == 5)move_5.play();
+}
+//ReproductionSoundMove - звук ходьбы
+#pragma endregion
 #pragma region DeleteItem
 void FindIndexChest(int loc[4]);//Поиск сундука в массиве structure
 void DeleteLineOfSight(int line_of_sight, int loc[4]) {
@@ -373,7 +403,7 @@ void ProductionDelay(double timeDelay) {
     }
 }
 //ProductionDelay - Усталость при добывании/ломании структур
-void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, int chek_input[2], int& invent_info, vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop,sf::Sound& break_struct, sf::Sound& break_tool) {
+void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& line_of_sight, int chek_input[2], int& invent_info, vector<InfoStucture>& structure, vector<InfoTempItem>& timedrop,char choice,sf::Sound& break_struct, sf::Sound& break_tool, sf::Sound& breaking_wood_1, sf::Sound& breaking_wood_2, sf::Sound& breaking_wood_3, sf::Sound& breaking_wood_4, sf::Sound& breaking_wood_5, sf::Sound& hit_hand_1, sf::Sound& hit_hand_2, sf::Sound& hit_hand_3, sf::Sound& hit_hand_4,sf::Sound& pickaxe1,sf::Sound& pickaxe2) {
     srand(time(0));
     int amount_structmass = 0;
     string temp_num = "",f;
@@ -408,7 +438,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                         if (structure[i].name == 'C') {
                             FindIndexChest(loc);
                             for (int l = 0; l != 12; l++) {
-                                if (dropchest[index_input_chestdrop].drop[i].empty() == false) { error = 11; break; }
+                                if (!dropchest[index_input_chestdrop].drop[l].empty()) { error = 11; return; }
                             }
                         }
                         else if (structure[i].name == 'W') {
@@ -442,7 +472,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
-                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if(rand()%(100-1+1)+1 <=20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
+                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if(rand()%(100-1+1)+1 <=40)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
                             else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
                             else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
                             else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
@@ -482,6 +512,11 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
             }
+            if (choice == 'c' && error == 0 || choice == 'C' && error == 0)ReproductionSoundTree(breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4);
+            else if (choice == 'b' && error == 0 || choice == 'B' && error == 0) {
+                if (rand() % (2 - 1 + 1) + 1 == 1)pickaxe1.play();
+                else pickaxe2.play();
+            }
         }
         else {
             if (world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'Y' && chek_input[1] == 1 || world[loc[0]][loc[1]][loc[2] - 1][loc[3]] == 'y' && chek_input[1] == 1)error = 3;
@@ -518,7 +553,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                         if (structure[i].name == 'C') {
                             FindIndexChest(loc);
                             for (int l = 0; l != 12; l++) {
-                                if (dropchest[index_input_chestdrop].drop[i].empty() == false) { error = 11; break; }
+                                if (!dropchest[index_input_chestdrop].drop[l].empty()) { error = 11; return; }
                             }
                         }
                         else if (structure[i].name == 'W') {
@@ -552,7 +587,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
-                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if(rand()%(100-1+1)+1 <=20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
+                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if(rand()%(100-1+1)+1 <=40)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
                             else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
                             else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
                             else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
@@ -592,6 +627,11 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
             }
+            if (choice == 'c' && error == 0 || choice == 'C' && error == 0)ReproductionSoundTree(breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4);
+            else if (choice == 'b' && error == 0 || choice == 'B' && error == 0) {
+                if (rand() % (2 - 1 + 1) + 1 == 1)pickaxe1.play();
+                else pickaxe2.play();
+            }
         }
         else {
             if (world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'Y' && chek_input[1] == 1 || world[loc[0]][loc[1]][loc[2] + 1][loc[3]] == 'y' && chek_input[1] == 1)error = 3;
@@ -628,7 +668,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                         if (structure[i].name == 'C') {
                             FindIndexChest(loc);
                             for (int l = 0; l != 12; l++) {
-                                if (dropchest[index_input_chestdrop].drop[i].empty() == false) { error = 11; break; }
+                                if (!dropchest[index_input_chestdrop].drop[l].empty()) { error = 11; return; }
                             }
                         }
                         else if (structure[i].name == 'W') {
@@ -662,7 +702,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
-                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if (rand() % (100 - 1 + 1) + 1 <= 20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
+                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if (rand() % (100 - 1 + 1) + 1 <= 40)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
                             else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
                             else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
                             else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
@@ -702,6 +742,11 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
             }
+            if (choice == 'c' && error == 0 || choice == 'C' && error == 0)ReproductionSoundTree(breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4);
+            else if (choice == 'b' && error == 0 || choice == 'B' && error == 0) {
+                if (rand() % (2 - 1 + 1) + 1 == 1)pickaxe1.play();
+                else pickaxe2.play();
+            }
         }
         else {
             if (chek_input[1] == 1 && world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'Y' || world[loc[0]][loc[1]][loc[2]][loc[3] + 1] == 'y' && chek_input[1] == 1)error = 3;
@@ -737,8 +782,9 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     if (structure[i].location[0] == loc[0] && structure[i].location[1] == loc[1] && structure[i].location[2] == loc[2] && structure[i].location[3] == loc[3] - 1) {
                         if (structure[i].name == 'C') {
                             FindIndexChest(loc);
+                            string g;
                             for (int l = 0; l != 12; l++) {
-                                if (dropchest[index_input_chestdrop].drop[i].empty() == false) { error = 11; break; }
+                                if (!dropchest[index_input_chestdrop].drop[l].empty()) { error = 11; return; }
                             }
                         }
                         else if (structure[i].name == 'W') {
@@ -772,7 +818,7 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                             save_time_delay = 0; check_fatigue = false;
                             if (structure[i].name == 'Y') { drop.amount.resize(2); drop.amount[0] = rand() % (5 - 3 + 1) + 3; drop.amount[1] = rand() % (2 - 1 + 1) + 1; drop.name = 'Y'; }
                             else if (structure[i].name == 'y') { drop.amount.resize(2); drop.amount[1] = 1; drop.name = 'y'; }
-                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if (rand() % (100 - 1 + 1) + 1 <= 20)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
+                            else if (structure[i].name == 'S') { drop.amount.resize(2); drop.amount[0] = rand() % (3 - 2 + 1) + 2; if (rand() % (100 - 1 + 1) + 1 <= 40)drop.amount[1] = rand() % (3 - 1 + 1) + 1; drop.name = 'S'; }
                             else if (structure[i].name == 'C') { break_struct.play(); drop.amount.resize(1); DeleteIndexChest(i); invent_info = 4; drop.amount[0] = 1; drop.name = 'C'; }
                             else if (structure[i].name == 'W') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'W'; }
                             else if (structure[i].name == 'i') { break_struct.play(); drop.amount.resize(1); drop.amount[0] = 1; drop.name = 'i'; }
@@ -811,6 +857,11 @@ void ChopBreak(vector<vector<vector<vector<char>>>>& world, int loc[4], int& lin
                     }
                     else structure[structure.size() - 1].hp -= 0.5;
                 }
+            }
+            if (choice == 'c' && error == 0 || choice == 'C' && error == 0)ReproductionSoundTree(breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4);
+            else if (choice == 'b' && error == 0 || choice == 'B' && error == 0) {
+                if (rand() % (2 - 1 + 1) + 1 == 1)pickaxe1.play();
+                else pickaxe2.play();
             }
         }
         else {
@@ -1605,9 +1656,9 @@ void CraftingRecipes(char choicecraft) {
     else if (temp_text[0] == "уголь" && temp_text[1] == "палки" &&  chek_amountitem == 2 ) {
         if (num[1] - 2 == num[0] && craft.size() == 4 || num[1] - 3 == num[0] && craft.size() == 9) {
             craft_turn = true;
-            if (stoi(temp_num[0]) > stoi(temp_num[1]))craft_aftermath_input = "x" + temp_num[0] + " факел";
-            else if (stoi(temp_num[1]) == stoi(temp_num[0]))craft_aftermath_input = "x" + temp_num[0] + " факел";
-            else craft_aftermath_input = "x" + temp_num[1] + " факел";
+            if (stoi(temp_num[0]) > stoi(temp_num[1]))craft_aftermath_input = "x" + std::to_string(stoi(temp_num[1]) * 2) + " факел";
+            else if (stoi(temp_num[1]) == stoi(temp_num[0]))craft_aftermath_input = "x" + std::to_string(stoi(temp_num[0]) * 2) + " факел";
+            else if (stoi(temp_num[0]) < stoi(temp_num[1]))craft_aftermath_input = "x" + std::to_string(stoi(temp_num[0]) * 2) + " факел";
             if (choicecraft == 'c' || choicecraft == 'C') {
                 if (stoi(temp_num[0]) > stoi(temp_num[1])) {
                     craft[num[0]] = "x" + std::to_string(stoi(temp_num[0]) - stoi(temp_num[1])) + " " + temp_text[0];
@@ -2326,9 +2377,9 @@ void EjectionOfObjects(int line_of_sight, int loc[4], vector<InfoStucture>& stru
                     check_empty = 0;
                 }
             }
+            if (error_input == 0)throw_away.play();
         }
         ClearLineScreen();
-        if (error_input == 0)throw_away.play();
     }
     temp_text[0] = ""; temp_text[1] = ""; temp_text[2] = ""; temp_text[3] = ""; choice = ' ';
 }
@@ -2340,7 +2391,7 @@ void PutInHand(int line_of_sight, int loc[4]) {
         if (error_input == 0) { cout << "\nВведите номер ячейки которую хотите поместить в руку(0 для выхода в инвентарь): "; cin >> hand; }
         else if (error_input == 8) { cout << "\nСнова введите номер ячейки которую хотите поместить в руку(0 для выхода в инвентарь): "; cin >> hand; }
         if (hand < 0 || hand>20) { error_input = 8; ClearLineScreen(); InputConsoleInvent(); }
-        else if (hand == 0) { error_input = 0; break; }
+        else if (hand == 0) { error_input = 0; return; }
     } while (error_input != 0);
     hand--;
 }
@@ -3549,36 +3600,6 @@ void TreeGrowth(double timeStructure) {
 }
 //TreeGrowth - Рост саженцев
 #pragma endregion
-#pragma region PlaySound
-void ReproductionSoundTree(sf::Sound& breaking_wood_1, sf::Sound& breaking_wood_2, sf::Sound& breaking_wood_3, sf::Sound& breaking_wood_4, sf::Sound& breaking_wood_5, sf::Sound& hit_hand_1, sf::Sound& hit_hand_2, sf::Sound& hit_hand_3, sf::Sound& hit_hand_4) {
-    //hit_hand_1.play();
-    if (inventory[hand].find("топор") != string::npos) {
-        int num = rand() % (5 - 1 + 1) + 1;
-        if (num == 1) breaking_wood_1.play();
-        else if (num == 2) breaking_wood_2.play();
-        else if (num == 3) breaking_wood_3.play();
-        else if (num == 4) breaking_wood_4.play();
-        else if (num == 5) breaking_wood_5.play();
-    }
-    else {
-        int num = rand() % (4 - 1 + 1) + 1;
-        if (num == 1)hit_hand_1.play();
-        else if (num == 2) hit_hand_2.play();
-        else if (num == 3) hit_hand_3.play();
-        else if (num == 4) hit_hand_4.play();
-    }
-}
-//ReproductionSoundTre - звук ударов по дереву
-void ReproductionSoundMove(sf::Sound& move_1, sf::Sound& move_2, sf::Sound& move_3, sf::Sound& move_4, sf::Sound& move_5) {
-    int num = rand() % (5 - 1 + 1) + 1;
-    if (num == 1)move_1.play();
-    else if (num == 2)move_2.play();
-    else if (num == 3)move_3.play();
-    else if (num == 4)move_4.play();
-    else if (num == 5)move_5.play();
-}
-//ReproductionSoundMove - звук ходьбы
-#pragma endregion
 void CheckTrueChoice(char& choice, int chek_input[3],int loc[4], string check_text[2],int& invent_info,sf::Sound& take,sf::Music& day_sound, sf::Music& night_sound) {
     do {
         cout << endl << "[w] - Вперед | [s] - Назад | [d] - В право | [a] - В лево";
@@ -3896,11 +3917,10 @@ int Player() {
                     timeDelay = elapsedSDelay.count();
                     ProductionDelay(timeDelay);
                     if (check_fatigue == false) {
-                        ReproductionSoundTree(breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4);
                         chek_input[1] = 0;
                         ProductionDelay(timeDelay);
                         check_fatigue = true;
-                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop, break_struct, break_tool);
+                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop,choice, break_struct, break_tool, breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4, pickaxe1, pickaxe2);
                         chek_input[0] = 0;
                     }
                     else error = 20;
@@ -3909,30 +3929,27 @@ int Player() {
             }
         }
         else if (choice == 'b' || choice == 'B') {
-            if (inventory[hand].find('-') + 1 != inventory[hand].find("кирка")) {
-                if (inventory[hand].find('-') + 1 == inventory[hand].find("топор"))error = 18;
-                else error = 19;
-            }
-            else {
-                string g;
-                if (chek_input[1] == 1) { 
+            if (chek_input[1] == 1) {
+                if (inventory[hand].find('-') + 1 != inventory[hand].find("кирка")) {
+                    if (inventory[hand].find('-') + 1 == inventory[hand].find("топор"))error = 18;
+                    else error = 19;
+                }
+                else {
                     auto endDelay = chrono::steady_clock::now();
                     chrono::duration<double> elapsedSDelay = endDelay - startDelay;
                     timeDelay = elapsedSDelay.count();
                     ProductionDelay(timeDelay);
                     if (check_fatigue == false) {
-                        if (rand() % (2 - 1 + 1) + 1 == 1)pickaxe1.play();
-                        else pickaxe2.play();
                         chek_input[0] = 0;
                         ProductionDelay(timeDelay);
                         check_fatigue = true;
-                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop, break_struct, break_tool);
+                        ChopBreak(world, loc, line_of_sight, chek_input, invent_info, structure, timedrop, choice, break_struct, break_tool, breaking_wood_1, breaking_wood_2, breaking_wood_3, breaking_wood_4, breaking_wood_5, hit_hand_1, hit_hand_2, hit_hand_3, hit_hand_4, pickaxe1, pickaxe2);
                         chek_input[1] = 0;
                     }
                     else error = 20;
                 }
-                else error = 6;
             }
+            else error = 6;
         }
         else if (choice == 'm' || choice == 'M') { paper_open.play(); Map(world, loc); }
         else if (choice == 'i' || choice == 'I') {

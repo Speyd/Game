@@ -541,15 +541,15 @@ int Creation_Launch() {
                     cout << line_symbol2; cout << t1;
                     cout << "      2. Палки\n" << t1;
                     cout << line_symbol2; cout << t1;
-                    cout << "      3.Верстак\n" << t1;
+                    cout << "      3. Верстак\n" << t1;
                     cout << line_symbol2; cout << t1;
-                    cout << "      4.Сундук\n" << t1;
+                    cout << "      4. Сундук\n" << t1;
                     cout << line_symbol2; cout << t1;
-                    cout << "      5.Деревянный - каменный топор\n" << t1;
+                    cout << "      5. Деревянный - каменный топор\n" << t1;
                     cout << line_symbol2; cout << t1;
-                    cout << "      6.Деревянная - каменная кирка\n" << t1;
+                    cout << "      6. Деревянная - каменная кирка\n" << t1;
                     cout << line_symbol2; cout << t1;
-                    cout << "      7.Факел\n" << t1;
+                    cout << "      7. Факел\n" << t1;
                     cout << line_symbol2;
                 }
                 cout << t;
